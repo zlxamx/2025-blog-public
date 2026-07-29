@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
@@ -23,9 +24,11 @@ interface ProjectCardProps {
 	isEditMode?: boolean
 	onUpdate?: (project: Project, oldProject: Project, imageItem?: ImageItem) => void
 	onDelete?: () => void
+	onMoveUp?: () => void
+	onMoveDown?: () => void
 }
 
-export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }: ProjectCardProps) {
+export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete, onMoveUp, onMoveDown }: ProjectCardProps) {
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
 	const [localProject, setLocalProject] = useState(project)
@@ -80,6 +83,12 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete }:
 						</>
 					) : (
 						<>
+							<button onClick={onMoveUp} disabled={!onMoveUp} aria-label='上移项目' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronUp className='h-4 w-4' />
+							</button>
+							<button onClick={onMoveDown} disabled={!onMoveDown} aria-label='下移项目' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronDown className='h-4 w-4' />
+							</button>
 							<button onClick={() => setIsEditing(true)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
 								编辑
 							</button>

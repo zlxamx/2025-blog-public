@@ -6,6 +6,7 @@ import { useSize } from '@/hooks/use-size'
 import { cn } from '@/lib/utils'
 import EditableStarRating from '@/components/editable-star-rating'
 import { useState } from 'react'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 import LogoUploadDialog, { type LogoItem } from './logo-upload-dialog'
 
 export interface Share {
@@ -22,9 +23,11 @@ interface ShareCardProps {
 	isEditMode?: boolean
 	onUpdate?: (share: Share, oldShare: Share, logoItem?: LogoItem) => void
 	onDelete?: () => void
+	onMoveUp?: () => void
+	onMoveDown?: () => void
 }
 
-export function ShareCard({ share, isEditMode = false, onUpdate, onDelete }: ShareCardProps) {
+export function ShareCard({ share, isEditMode = false, onUpdate, onDelete, onMoveUp, onMoveDown }: ShareCardProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
@@ -80,6 +83,12 @@ export function ShareCard({ share, isEditMode = false, onUpdate, onDelete }: Sha
 						</>
 					) : (
 						<>
+							<button onClick={onMoveUp} disabled={!onMoveUp} aria-label='上移推荐' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronUp className='h-4 w-4' />
+							</button>
+							<button onClick={onMoveDown} disabled={!onMoveDown} aria-label='下移推荐' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronDown className='h-4 w-4' />
+							</button>
 							<button onClick={() => setIsEditing(true)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
 								编辑
 							</button>

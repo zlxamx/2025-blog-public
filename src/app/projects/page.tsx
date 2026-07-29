@@ -10,6 +10,7 @@ import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import initialList from './list.json'
 import type { ImageItem } from './components/image-upload-dialog'
+import { moveListItem } from '@/lib/list-order'
 
 export default function Page() {
 	const [projects, setProjects] = useState<Project[]>(initialList as Project[])
@@ -54,6 +55,10 @@ export default function Page() {
 		if (confirm(`确定要删除 ${project.name} 吗？`)) {
 			setProjects(projects.filter(p => p.url !== project.url))
 		}
+	}
+
+	const handleMove = (from: number, to: number) => {
+		setProjects(projects => moveListItem(projects, from, to))
 	}
 
 	const handleChoosePrivateKey = async (file: File) => {
@@ -135,7 +140,15 @@ export default function Page() {
 			<div className='flex flex-col items-center justify-center px-6 pt-32 pb-12'>
 				<div className='grid w-full max-w-[1200px] grid-cols-2 gap-6 max-md:grid-cols-1'>
 					{projects.map((project, index) => (
-						<ProjectCard key={project.url} project={project} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={() => handleDelete(project)} />
+						<ProjectCard
+							key={project.url}
+							project={project}
+							isEditMode={isEditMode}
+							onUpdate={handleUpdate}
+							onDelete={() => handleDelete(project)}
+							onMoveUp={index > 0 ? () => handleMove(index, index - 1) : undefined}
+							onMoveDown={index < projects.length - 1 ? () => handleMove(index, index + 1) : undefined}
+						/>
 					))}
 				</div>
 			</div>

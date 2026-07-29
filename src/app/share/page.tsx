@@ -11,6 +11,7 @@ import { useConfigStore } from '@/app/(home)/stores/config-store'
 import initialList from './list.json'
 import type { Share } from './components/share-card'
 import type { LogoItem } from './components/logo-upload-dialog'
+import { moveListItem } from '@/lib/list-order'
 
 export default function Page() {
 	const [shares, setShares] = useState<Share[]>(initialList as Share[])
@@ -61,6 +62,10 @@ export default function Page() {
 		if (confirm(`确定要删除 ${share.name} 吗？`)) {
 			setShares(shares.filter(s => s.url !== share.url))
 		}
+	}
+
+	const handleMove = (from: number, to: number) => {
+		setShares(shares => moveListItem(shares, from, to))
 	}
 
 	const handleChoosePrivateKey = async (file: File) => {
@@ -141,7 +146,7 @@ export default function Page() {
 				}}
 			/>
 
-			<GridView shares={shares} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} />
+			<GridView shares={shares} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} onMove={handleMove} />
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (

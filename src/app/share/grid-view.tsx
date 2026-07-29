@@ -10,9 +10,10 @@ interface GridViewProps {
 	isEditMode?: boolean
 	onUpdate?: (share: Share, oldShare: Share, logoItem?: LogoItem) => void
 	onDelete?: (share: Share) => void
+	onMove?: (from: number, to: number) => void
 }
 
-export default function GridView({ shares, isEditMode = false, onUpdate, onDelete }: GridViewProps) {
+export default function GridView({ shares, isEditMode = false, onUpdate, onDelete, onMove }: GridViewProps) {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedTag, setSelectedTag] = useState<string>('all')
 
@@ -50,17 +51,28 @@ export default function GridView({ shares, isEditMode = false, onUpdate, onDelet
 							className={`rounded-full px-4 py-1.5 text-sm transition-colors ${
 								selectedTag === tag ? 'bg-brand text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
 							}`}>
-							{tag}
-						</button>
-					))}
-				</div>
+								{tag}
+							</button>
+						))}
+					</div>
 			</div>
 
 			<div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3'>
-				{filteredShares.map(share => (
-					<ShareCard key={share.url} share={share} isEditMode={isEditMode} onUpdate={onUpdate} onDelete={() => onDelete?.(share)} />
-				))}
-			</div>
+				{filteredShares.map(share => {
+					const index = shares.indexOf(share)
+					return (
+						<ShareCard
+							key={share.url}
+							share={share}
+							isEditMode={isEditMode}
+							onUpdate={onUpdate}
+							onDelete={() => onDelete?.(share)}
+							onMoveUp={index > 0 ? () => onMove?.(index, index - 1) : undefined}
+							onMoveDown={index < shares.length - 1 ? () => onMove?.(index, index + 1) : undefined}
+						/>
+					)
+				})}
+				</div>
 
 			{filteredShares.length === 0 && (
 				<div className='mt-12 text-center text-gray-500'>
