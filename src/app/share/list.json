@@ -264,16 +264,6 @@
 		"stars": 3
 	},
 	{
-		"name": "Flux Pic Shader",
-		"logo": "/images/share/78a58c0955934e8d.webp",
-		"url": "https://shaders.fluxpic.com/",
-		"description": "流体动画工具，说不定以后可以参考",
-		"tags": [
-			"动画"
-		],
-		"stars": 3
-	},
-	{
 		"name": "Koi Pond",
 		"logo": "/images/share/a20a5149379578ee.webp",
 		"url": "https://www.bubbbly.com/app/koi-pond.html",
