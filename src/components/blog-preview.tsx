@@ -27,7 +27,7 @@ export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPr
 
 	return (
 		<div className='mx-auto flex max-w-[1500px] items-start justify-center gap-8 px-6 pt-28 pb-12 max-sm:px-0'>
-			<div className='hidden w-[15.5rem] shrink-0 min-[1440px]:flex min-[1440px]:justify-end'>
+			<div className='hidden w-[15.5rem] shrink-0 self-stretch min-[1440px]:flex min-[1440px]:justify-end'>
 				<BlogSidebar cover={cover} toc={toc} slug={slug} />
 			</div>
 
