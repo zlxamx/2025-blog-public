@@ -1,5 +1,5 @@
 {
-	"title": "关于本站",
-	"description": "一个基于 Github 的现代化博客系统",
-	"content": "📦网站基于 Github 仓库完全存储，所有内容版本可控\n\n🚀无后端，无 serverless function，纯静态站点\n\n✏️文章通过可视化 UI 直接编辑并提交到 Github 仓库\n\n🔑所有用户都可以编辑，提交需要 Owner 的 Private Key\n\n## 技术栈\n\n- Next.js\n- React\n- TypeScript\n- Tailwind CSS\n- Motion\n- Github API"
+	"title": "LuxiBlog",
+	"description": "希路路克的个人站点",
+	"content": "这里是希路路克的个人站点。\n\n这里主要用来存放希路路克撰写的文章，以及开发的展品。\n\n文章主要以极简主义、辩证思考为主题，设计生活中的各个方面，偶尔也会写一些书评、影评。\n\n有一个周刊栏目，原本叫做「希路路克的每周来信」，后直接改名叫做周刊，可以在文章-分类中查看周刊分组进行阅读。\n\n"
 }
