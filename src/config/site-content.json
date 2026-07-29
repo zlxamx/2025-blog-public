@@ -65,13 +65,6 @@
 			"value": "seedraft@outlook.com",
 			"label": "",
 			"order": 3
-		},
-		{
-			"id": "button-1785306817630",
-			"type": "xiaohongshu",
-			"value": "我在小红书收获了258次赞与收藏，来看看我的主页>> https://xhslink.cn/m/8Y6d5LtlMNW",
-			"label": "Rednote",
-			"order": 4
 		}
 	],
 	"clockShowSeconds": false,
