@@ -10,6 +10,7 @@ import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import initialList from './list.json'
 import type { AvatarItem } from './components/avatar-upload-dialog'
+import { moveListItem } from '@/lib/list-order'
 
 export default function Page() {
 	const [bloggers, setBloggers] = useState<Blogger[]>(initialList as Blogger[])
@@ -60,6 +61,10 @@ export default function Page() {
 		if (confirm(`确定要删除 ${blogger.name} 吗？`)) {
 			setBloggers(bloggers.filter(b => b.url !== blogger.url))
 		}
+	}
+
+	const handleMove = (from: number, to: number) => {
+		setBloggers(bloggers => moveListItem(bloggers, from, to))
 	}
 
 	const handleChoosePrivateKey = async (file: File) => {
@@ -140,7 +145,7 @@ export default function Page() {
 				}}
 			/>
 
-			<GridView bloggers={bloggers} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} />
+			<GridView bloggers={bloggers} isEditMode={isEditMode} onUpdate={handleUpdate} onDelete={handleDelete} onMove={handleMove} />
 
 			<motion.div initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} className='absolute top-4 right-6 flex gap-3 max-sm:hidden'>
 				{isEditMode ? (

@@ -8,15 +8,18 @@ import EditableStarRating from '@/components/editable-star-rating'
 import { Blogger, type BloggerStatus } from '../grid-view'
 import { useState } from 'react'
 import AvatarUploadDialog, { type AvatarItem } from './avatar-upload-dialog'
+import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface BloggerCardProps {
 	blogger: Blogger
 	isEditMode?: boolean
 	onUpdate?: (blogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => void
 	onDelete?: () => void
+	onMoveUp?: () => void
+	onMoveDown?: () => void
 }
 
-export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete }: BloggerCardProps) {
+export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete, onMoveUp, onMoveDown }: BloggerCardProps) {
 	const [expanded, setExpanded] = useState(false)
 	const [isEditing, setIsEditing] = useState(false)
 	const { maxSM } = useSize()
@@ -64,6 +67,12 @@ export function BloggerCard({ blogger, isEditMode = false, onUpdate, onDelete }:
 						</>
 					) : (
 						<>
+							<button onClick={onMoveUp} disabled={!onMoveUp} aria-label='上移博客' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronUp className='h-4 w-4' />
+							</button>
+							<button onClick={onMoveDown} disabled={!onMoveDown} aria-label='下移博客' className='rounded-lg px-1.5 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600 disabled:cursor-not-allowed disabled:opacity-30'>
+								<ChevronDown className='h-4 w-4' />
+							</button>
 							<button onClick={() => setIsEditing(true)} className='rounded-lg px-2 py-1.5 text-xs text-blue-400 transition-colors hover:text-blue-600'>
 								编辑
 							</button>

@@ -21,9 +21,10 @@ interface GridViewProps {
 	isEditMode?: boolean
 	onUpdate?: (blogger: Blogger, oldBlogger: Blogger, avatarItem?: AvatarItem) => void
 	onDelete?: (blogger: Blogger) => void
+	onMove?: (from: number, to: number) => void
 }
 
-export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete }: GridViewProps) {
+export default function GridView({ bloggers, isEditMode = false, onUpdate, onDelete, onMove }: GridViewProps) {
 	const [searchTerm, setSearchTerm] = useState('')
 	const [selectedCategory, setSelectedCategory] = useState<BloggerStatus>('recent')
 
@@ -65,9 +66,23 @@ export default function GridView({ bloggers, isEditMode = false, onUpdate, onDel
 			</div>
 
 			<div className='grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3'>
-				{filteredBloggers.map(blogger => (
-					<BloggerCard key={blogger.url} blogger={blogger} isEditMode={isEditMode} onUpdate={onUpdate} onDelete={() => onDelete?.(blogger)} />
-				))}
+				{filteredBloggers.map((blogger, filteredIndex) => {
+					const index = bloggers.indexOf(blogger)
+					const previous = filteredBloggers[filteredIndex - 1]
+					const next = filteredBloggers[filteredIndex + 1]
+
+					return (
+						<BloggerCard
+							key={blogger.url}
+							blogger={blogger}
+							isEditMode={isEditMode}
+							onUpdate={onUpdate}
+							onDelete={() => onDelete?.(blogger)}
+							onMoveUp={previous ? () => onMove?.(index, bloggers.indexOf(previous)) : undefined}
+							onMoveDown={next ? () => onMove?.(index, bloggers.indexOf(next)) : undefined}
+						/>
+					)
+				})}
 			</div>
 
 			{filteredBloggers.length === 0 && (
