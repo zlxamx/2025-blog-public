@@ -55,6 +55,13 @@
 			"value": "seedraft@outlook.com",
 			"label": "",
 			"order": 1
+		},
+		{
+			"id": "button-1785306742852",
+			"type": "wechat",
+			"value": "/images/social-buttons/bcdcf671461c3f75.png",
+			"label": "",
+			"order": 3
 		}
 	],
 	"clockShowSeconds": false,
