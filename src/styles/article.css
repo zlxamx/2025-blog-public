@@ -261,3 +261,46 @@
 .prose .footnote-backlinks a {
 	text-decoration: none;
 }
+
+@media (min-width: 1280px) {
+	.prose.footnote-rail-ready {
+		position: relative;
+		overflow: visible;
+	}
+	.prose.footnote-rail-ready > .footnote-endnotes {
+		position: absolute;
+		inset-block-start: 0;
+		inset-inline-start: calc(100% + 2.5rem);
+		width: 13rem;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		font-size: 0.8em;
+	}
+	.prose.footnote-rail-ready > .footnote-endnotes > .footnote-list {
+		position: relative;
+		height: var(--footnote-rail-height);
+		margin: 0;
+		list-style: none;
+	}
+	.prose.footnote-rail-ready > .footnote-endnotes > .footnote-list > .footnote {
+		position: absolute;
+		inset-block-start: var(--footnote-rail-y);
+		inset-inline: 0;
+		padding: 0 0 0 1.5em;
+	}
+	.prose.footnote-rail-ready > .footnote-endnotes > .footnote-list > .footnote::before {
+		content: counter(list-item);
+		position: absolute;
+		inset-inline-start: 0;
+		color: var(--color-brand);
+	}
+	.prose.footnote-rail-ready .footnote-backlinks {
+		position: absolute;
+		clip-path: inset(50%);
+	}
+	.prose.footnote-rail-ready .footnote-backlinks:focus-within {
+		position: static;
+		clip-path: none;
+	}
+}

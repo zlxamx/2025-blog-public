@@ -1,10 +1,11 @@
 'use client'
 
 import { motion } from 'motion/react'
+import { useRef } from 'react'
 import { INIT_DELAY } from '@/consts'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
-import { useSize } from '@/hooks/use-size'
 import { BlogSidebar } from '@/components/blog-sidebar'
+import { useFootnoteRail } from '@/components/footnote-rail'
 
 type BlogPreviewProps = {
 	markdown: string
@@ -16,20 +17,23 @@ type BlogPreviewProps = {
 }
 
 export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPreviewProps) {
-	const { maxSM: isMobile } = useSize()
 	const { content, toc, loading } = useMarkdownRender(markdown)
+	const proseRef = useRef<HTMLDivElement>(null)
+	useFootnoteRail(proseRef, !loading)
 
 	if (loading) {
 		return <div className='text-secondary flex h-full items-center justify-center text-sm'>渲染中...</div>
 	}
 
 	return (
-		<div className='mx-auto flex max-w-[1140px] justify-center gap-6 px-6 pt-28 pb-12 max-sm:px-0'>
+		<div className='mx-auto flex max-w-[1500px] items-start justify-center gap-8 px-6 pt-28 pb-12 max-xl:block max-sm:px-0'>
+			<BlogSidebar cover={cover} toc={toc} slug={slug} />
+
 			<motion.article
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
 				transition={{ delay: INIT_DELAY }}
-				className='card bg-article static flex-1 overflow-auto rounded-xl p-8'>
+				className='card bg-article static w-full max-w-[760px] flex-1 overflow-visible rounded-xl p-8 max-xl:max-w-none'>
 				<div>
 					<div className='text-center text-2xl font-semibold'>{title}</div>
 
@@ -41,11 +45,12 @@ export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPr
 
 					<div className='text-secondary mt-3 text-center text-sm'>{date}</div>
 
-					<div className='prose mt-6 max-w-none cursor-text'>{content}</div>
+					<div ref={proseRef} className='prose mt-6 max-w-none cursor-text'>
+						{content}
+					</div>
 				</div>
 			</motion.article>
 
-			{!isMobile && <BlogSidebar cover={cover} toc={toc} slug={slug} />}
 		</div>
 	)
 }
