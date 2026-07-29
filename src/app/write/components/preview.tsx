@@ -20,7 +20,6 @@ export function WritePreview({ form, coverPreviewUrl, onClose, slug }: WritePrev
 					title={previewData.title}
 					tags={form.tags}
 					date={previewData.date}
-					summary={form.summary}
 					cover={coverPreviewUrl || undefined}
 					slug={slug}
 				/>

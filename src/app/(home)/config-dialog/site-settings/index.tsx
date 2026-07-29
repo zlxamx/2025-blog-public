@@ -79,16 +79,6 @@ export function SiteSettings({
 				<label className='flex items-center gap-2'>
 					<input
 						type='checkbox'
-						checked={formData.summaryInContent ?? false}
-						onChange={e => setFormData({ ...formData, summaryInContent: e.target.checked })}
-						className='accent-brand h-4 w-4 rounded'
-					/>
-					<span className='text-sm font-medium'>摘要放入内容</span>
-				</label>
-
-				<label className='flex items-center gap-2'>
-					<input
-						type='checkbox'
 						checked={formData.hideEditButton ?? false}
 						onChange={e => setFormData({ ...formData, hideEditButton: e.target.checked })}
 						className='accent-brand h-4 w-4 rounded'
