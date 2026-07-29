@@ -228,3 +228,36 @@
 	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 8px;
 }
+
+/* Footnotes */
+.prose .footnote-ref {
+	font-size: 0.75em;
+	line-height: 0;
+	vertical-align: super;
+	margin-left: 0.15em;
+}
+.prose .footnote-ref a {
+	text-decoration: none;
+}
+.prose .footnote-endnotes {
+	margin-top: 3em;
+	padding-top: 1em;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	font-size: 0.9em;
+}
+.prose .footnote-list {
+	list-style-type: decimal;
+}
+.prose .footnote {
+	padding-left: 0.25em;
+}
+.prose .footnote p {
+	margin: 0.5em 0;
+}
+.prose .footnote-backlinks {
+	margin-left: 0.5em;
+	white-space: nowrap;
+}
+.prose .footnote-backlinks a {
+	text-decoration: none;
+}

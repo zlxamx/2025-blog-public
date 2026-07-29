@@ -1,5 +1,6 @@
 import { marked } from 'marked'
 import type { Tokens } from 'marked'
+import { appendFootnotes, prepareFootnotes, stripFootnoteReferences } from './footnotes'
 
 export type TocItem = { id: string; text: string; level: number }
 
@@ -66,7 +67,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	const renderer = new marked.Renderer()
 
 	renderer.heading = (token: Tokens.Heading) => {
-		const id = slugify(token.text || '')
+		const id = slugify(stripFootnoteReferences(token.text || '').replace(/<[^>]*>/g, ''))
 		return `<h${token.depth} id="${id}">${token.text}</h${token.depth}>`
 	}
 
@@ -179,8 +180,10 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 		]
 	})
 
+	const preparedFootnotes = prepareFootnotes(markdown)
+
 	// Pre-process with marked lexer first (after extensions are registered)
-	const tokens = marked.lexer(markdown)
+	const tokens = marked.lexer(preparedFootnotes.markdown)
 
 	// Extract TOC from parsed tokens (this correctly skips code blocks)
 	const toc: TocItem[] = []
@@ -188,7 +191,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 		for (const token of tokenList) {
 			if (token.type === 'heading' && token.depth <= 3) {
 				// Use the parsed text (markdown syntax like links/code already stripped)
-				const text = token.text
+				const text = stripFootnoteReferences(token.text).replace(/<[^>]*>/g, '')
 				const id = slugify(text)
 				toc.push({ id, text, level: token.depth })
 			}
@@ -227,7 +230,7 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 			}
 		}
 	}
-	const html = (marked.parser(tokens) as string) || ''
+	const html = appendFootnotes((marked.parser(tokens) as string) || '', preparedFootnotes, (definition) => marked.parse(definition) as string)
 
 	return { html, toc }
 }
