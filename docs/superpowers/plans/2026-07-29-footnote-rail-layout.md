@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Do not change Markdown source files or footnote semantic HTML.
-- At widths below 1280px, render one-column content with ordinary endnotes below the prose.
+- At widths below 1440px, render one-column content with ordinary endnotes below the prose.
 - Keep article summaries hidden.
 - Do not add a dependency.
 
@@ -69,7 +69,7 @@ Run: `node --experimental-strip-types --test src/lib/footnote-rail.test.mjs`
 
 **Interfaces:**
 - `useFootnoteRail(proseRef)` measures `.footnote-ref > a[role="doc-noteref"]` and `.footnote` elements inside the prose ref.
-- It toggles `footnote-rail-ready` only when `window.matchMedia('(min-width: 1280px)')` matches.
+- It toggles `footnote-rail-ready` only when `window.matchMedia('(min-width: 1440px)')` matches.
 
 - [ ] **Step 1: Write the failing placement test from Task 1 and run it**
 - [ ] **Step 2: Implement the hook using `ResizeObserver` and a window resize listener**
@@ -83,7 +83,7 @@ note.style.setProperty('--footnote-rail-y', `${top}px`)
 - [ ] **Step 3: Add wide-screen rail CSS**
 
 ```css
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   .prose.footnote-rail-ready { position: relative; overflow: visible; }
   .prose.footnote-rail-ready > .footnote-endnotes {
     position: absolute;
@@ -117,7 +117,7 @@ Run: `node --experimental-strip-types --test src/lib/footnote-rail.test.mjs src/
   <motion.article className='... min-w-0 max-w-[760px] flex-1 ...'>
 ```
 
-- [ ] **Step 3: Keep normal-flow endnotes below the prose below 1280px**
+- [ ] **Step 3: Keep normal-flow endnotes below the prose below 1440px**
 - [ ] **Step 4: Build**
 
 Run: `pnpm build`

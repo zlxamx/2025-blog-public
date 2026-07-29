@@ -262,7 +262,7 @@
 	text-decoration: none;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
 	.prose.footnote-rail-ready {
 		position: relative;
 		overflow: visible;

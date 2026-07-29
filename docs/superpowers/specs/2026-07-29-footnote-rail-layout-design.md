@@ -14,14 +14,14 @@ views retain the existing semantic endnotes beneath the article.
 - The left rail contains the existing cover image when present, table of
   contents, like button, and scroll-to-top control.
 - The right rail is reserved for footnotes and does not contain a summary.
-- At the breakpoint where the three-column layout no longer fits, both rails
+- Below 1440px, both rails
   are hidden and the current single-column article presentation remains.
 
 ## Footnote behavior
 
 - Keep the existing semantic HTML: body references link to endnotes and every
   endnote retains a backlink.
-- On wide screens with JavaScript available, measure each first reference and
+- At 1440px and wider with JavaScript available, measure each first reference and
   place its endnote in the rail at the matching vertical position.
 - Resolve overlaps by moving a later footnote below the prior one with a fixed
   gap.

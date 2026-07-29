@@ -20,7 +20,7 @@ type BlogSidebarProps = {
 
 export function BlogSidebar({ cover, toc, slug }: BlogSidebarProps) {
 	return (
-		<div className='sticky flex w-[200px] shrink-0 flex-col items-start gap-4 self-start max-xl:hidden' style={{ top: 24 }}>
+		<div className='sticky flex w-[200px] shrink-0 flex-col items-start gap-4 self-start' style={{ top: 24 }}>
 			{cover && (
 				<motion.div
 					initial={{ opacity: 0, scale: 0.8 }}

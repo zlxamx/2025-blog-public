@@ -3,7 +3,7 @@
 import { useEffect, type RefObject } from 'react'
 import { layoutFootnoteRail } from '@/lib/footnote-rail'
 
-const WIDE_SCREEN_QUERY = '(min-width: 1280px)'
+const WIDE_SCREEN_QUERY = '(min-width: 1440px)'
 const RAIL_GAP = 16
 
 export function useFootnoteRail(proseRef: RefObject<HTMLElement | null>, enabled: boolean) {

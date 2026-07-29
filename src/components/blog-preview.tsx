@@ -26,8 +26,10 @@ export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPr
 	}
 
 	return (
-		<div className='mx-auto flex max-w-[1500px] items-start justify-center gap-8 px-6 pt-28 pb-12 max-xl:block max-sm:px-0'>
-			<BlogSidebar cover={cover} toc={toc} slug={slug} />
+		<div className='mx-auto flex max-w-[1500px] items-start justify-center gap-8 px-6 pt-28 pb-12 max-sm:px-0'>
+			<div className='hidden w-[15.5rem] shrink-0 min-[1440px]:flex min-[1440px]:justify-end'>
+				<BlogSidebar cover={cover} toc={toc} slug={slug} />
+			</div>
 
 			<motion.article
 				initial={{ opacity: 0 }}
@@ -51,6 +53,7 @@ export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPr
 				</div>
 			</motion.article>
 
+			<div aria-hidden='true' className='hidden w-[15.5rem] shrink-0 min-[1440px]:block' />
 		</div>
 	)
 }
