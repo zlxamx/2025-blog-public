@@ -45,8 +45,8 @@
 		"width": 315,
 		"height": 48,
 		"order": 6,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": -121,
+		"offsetY": 179,
 		"enabled": true
 	},
 	"shareCard": {
@@ -58,11 +58,11 @@
 		"enabled": true
 	},
 	"articleCard": {
-		"width": 266,
-		"height": 160,
+		"width": 320,
+		"height": 178,
 		"order": 8,
-		"offsetX": null,
-		"offsetY": null,
+		"offsetX": -510,
+		"offsetY": 194,
 		"enabled": true
 	},
 	"writeButtons": {
