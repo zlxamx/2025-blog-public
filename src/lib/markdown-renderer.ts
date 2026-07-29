@@ -61,7 +61,9 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	// Load optional renderers first so they apply on the FIRST lex/parse pass.
 	// (If we lex before registering extensions, math tokens won't ever be produced on a cold refresh.)
 	const codeBlockMap = new Map<string, { html: string; original: string }>()
-	const [shiki, katex] = await Promise.all([loadShiki(), loadKatex()])
+	const hasCodeBlock = /^\s*(```|~~~)/m.test(markdown)
+	const hasMath = /(^|[^\\])\${1,2}(?!\s)/m.test(markdown)
+	const [shiki, katex] = await Promise.all([hasCodeBlock ? loadShiki() : null, hasMath ? loadKatex() : null])
 
 	// Render HTML with heading ids
 	const renderer = new marked.Renderer()

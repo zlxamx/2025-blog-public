@@ -2,7 +2,6 @@
 
 import { motion } from 'motion/react'
 import { useRef } from 'react'
-import { INIT_DELAY } from '@/consts'
 import { useMarkdownRender } from '@/hooks/use-markdown-render'
 import { BlogSidebar } from '@/components/blog-sidebar'
 import { useFootnoteRail } from '@/components/footnote-rail'
@@ -34,7 +33,7 @@ export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPr
 			<motion.article
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
-				transition={{ delay: INIT_DELAY }}
+				transition={{ duration: 0.15 }}
 				className='card bg-article static w-full max-w-[760px] flex-1 overflow-visible rounded-xl p-8 max-xl:max-w-none'>
 				<div>
 					<div className='text-center text-2xl font-semibold'>{title}</div>

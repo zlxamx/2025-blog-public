@@ -3,7 +3,7 @@
 		"name": "文芽 Seedraft",
 		"year": 2026,
 		"description": "给长篇连载创作者的 AI 写作工作台。AI 在后台完成生成、审计、故事档案整理与下一章任务推进，创作者始终负责判断、批准和方向。",
-		"image": "https://xiluluke.com/images/seedraft-project.png",
+		"image": "/images/project/seedraft-icon.png",
 		"url": "https://seedraft.xiluluke.com/",
 		"tags": [
 			"AI",
@@ -15,7 +15,7 @@
 		"name": "唯物辩证法问答",
 		"year": 2026,
 		"description": "围绕《矛盾论》《实践论》提问，用辩证法的思路拆解现实问题，获得一条可以继续行动的分析路径。",
-		"image": "https://xiluluke.com/images/dialectics-project.png",
+		"image": "/images/project/dialectics-icon.png",
 		"url": "https://dialectics.xiluluke.com/",
 		"tags": [
 			"AI",

@@ -108,12 +108,16 @@ export default function NavCard() {
 
 	useEffect(() => {
 		if (form === 'icons' && activeIndex !== undefined && hoveredIndex !== activeIndex) {
+			if (maxSM) {
+				setHoveredIndex(activeIndex)
+				return
+			}
 			const timer = setTimeout(() => {
 				setHoveredIndex(activeIndex)
 			}, 1500)
 			return () => clearTimeout(timer)
 		}
-	}, [hoveredIndex, activeIndex, form])
+	}, [hoveredIndex, activeIndex, form, maxSM])
 
 	if (maxSM) position = { x: center.x - size.width / 2, y: 16 }
 
@@ -175,7 +179,8 @@ export default function NavCard() {
 										key={item.href}
 										href={item.href}
 										className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
-										onMouseEnter={() => setHoveredIndex(index)}>
+										onMouseEnter={() => setHoveredIndex(index)}
+										onClick={() => setHoveredIndex(index)}>
 										<div className='flex h-7 w-7 items-center justify-center'>
 											{hoveredIndex == index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
 										</div>

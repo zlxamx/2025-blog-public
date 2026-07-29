@@ -20,6 +20,7 @@ import { readFileAsText } from '@/lib/file-utils'
 import { getDisplayCategories } from '@/lib/blog-categories'
 import { cn } from '@/lib/utils'
 import { saveBlogEdits } from './services/save-blog-edits'
+import { preloadBlog } from '@/lib/load-blog'
 import { Check } from 'lucide-react'
 import { BlogCoverHoverPreview, useBlogCoverHover } from './components/blog-cover-hover'
 import { CategoryModal } from './components/category-modal'
@@ -406,7 +407,10 @@ export default function BlogPage() {
 									const isSelected = selectedSlugs.has(it.slug)
 									return (
 										<Link
-											onMouseEnter={() => onCoverLinkMouseEnter(it.cover)}
+											onMouseEnter={() => {
+												onCoverLinkMouseEnter(it.cover)
+												preloadBlog(it.slug)
+											}}
 											onMouseLeave={cancelCoverPreview}
 											href={`/blog/${it.slug}`}
 											key={it.slug}

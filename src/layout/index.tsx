@@ -1,14 +1,16 @@
 'use client'
 import { PropsWithChildren } from 'react'
+import dynamic from 'next/dynamic'
 import { useCenterInit } from '@/hooks/use-center'
-import BlurredBubblesBackground from './backgrounds/blurred-bubbles'
 import NavCard from '@/components/nav-card'
 import { Toaster } from 'sonner'
 import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon } from 'lucide-react'
 import { useSize, useSizeInit } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { ScrollTopButton } from '@/components/scroll-top-button'
-import MusicCard from '@/components/music-card'
+
+const BlurredBubblesBackground = dynamic(() => import('./backgrounds/blurred-bubbles'), { ssr: false })
+const MusicCard = dynamic(() => import('@/components/music-card'), { ssr: false })
 
 export default function Layout({ children }: PropsWithChildren) {
 	useCenterInit()

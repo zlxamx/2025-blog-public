@@ -1,3 +1,5 @@
+'use client'
+
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useLatestBlog } from '@/hooks/use-blog-index'
@@ -6,6 +8,7 @@ import { CARD_SPACING } from '@/consts'
 import dayjs from 'dayjs'
 import Link from 'next/link'
 import { HomeDraggableLayer } from './home-draggable-layer'
+import { preloadBlog } from '@/lib/load-blog'
 
 export default function ArticleCard() {
 	const center = useCenterStore()
@@ -39,7 +42,7 @@ export default function ArticleCard() {
 						<span className='text-secondary text-xs'>加载中...</span>
 					</div>
 				) : blog ? (
-					<Link href={`/blog/${blog.slug}`} className='flex transition-opacity hover:opacity-80'>
+					<Link href={`/blog/${blog.slug}`} onMouseEnter={() => preloadBlog(blog.slug)} className='flex transition-opacity hover:opacity-80'>
 						{blog.cover ? (
 							<img src={blog.cover} alt='cover' className='mr-3 h-12 w-12 shrink-0 rounded-xl border object-cover' />
 						) : (

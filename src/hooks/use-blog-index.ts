@@ -6,7 +6,7 @@ export type { BlogIndexItem } from '@/app/blog/types'
 
 // 改进 fetcher，抛出状态码以便处理 404
 const fetcher = async (url: string) => {
-	const res = await fetch(url, { cache: 'no-store' })
+	const res = await fetch(url)
 	if (!res.ok) {
 		const error: any = new Error('Fetch failed')
 		error.status = res.status

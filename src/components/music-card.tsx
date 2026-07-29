@@ -92,7 +92,7 @@ export default function MusicCard() {
 	// Handle currentIndex change - load new audio
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
-		if (audioRef.current) {
+		if (audioRef.current?.src) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
 			audioRef.current.src = MUSIC_FILES[currentIndex]
@@ -127,6 +127,10 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
+		if (!isPlaying && audioRef.current && !audioRef.current.src) {
+			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.loop = false
+		}
 		setIsPlaying(!isPlaying)
 	}
 

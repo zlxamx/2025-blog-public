@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp } from 'lucide-react'
+import { AppWindow, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import ImageUploadDialog, { type ImageItem } from './image-upload-dialog'
@@ -30,6 +30,7 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete, onMoveUp, onMoveDown }: ProjectCardProps) {
 	const [isEditing, setIsEditing] = useState(false)
+	const [imageFailed, setImageFailed] = useState(false)
 	const { maxSM } = useSize()
 	const [localProject, setLocalProject] = useState(project)
 	const [showImageDialog, setShowImageDialog] = useState(false)
@@ -42,6 +43,7 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete, o
 	}
 
 	const handleImageSubmit = (image: ImageItem) => {
+		setImageFailed(false)
 		setImageItem(image)
 		const imageUrl = image.type === 'url' ? image.url : image.previewUrl
 		const updated = { ...localProject, image: imageUrl }
@@ -102,12 +104,24 @@ export function ProjectCard({ project, isEditMode = false, onUpdate, onDelete, o
 
 			<div className='flex items-start gap-4'>
 				<div className='group relative'>
-					<img
-						src={localProject.image}
-						alt={localProject.name}
-						className={cn('h-16 w-16 shrink-0 rounded-xl object-cover', canEdit && 'cursor-pointer')}
-						onClick={() => canEdit && setShowImageDialog(true)}
-					/>
+					{localProject.image && !imageFailed ? (
+						<img
+							src={localProject.image}
+							alt={localProject.name}
+							loading='lazy'
+							decoding='async'
+							className={cn('h-16 w-16 shrink-0 rounded-xl bg-white/80 p-1 object-contain', canEdit && 'cursor-pointer')}
+							onError={() => setImageFailed(true)}
+							onClick={() => canEdit && setShowImageDialog(true)}
+						/>
+					) : (
+						<div
+							className={cn('text-secondary flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-white/80', canEdit && 'cursor-pointer')}
+							aria-label={`${localProject.name} 图标缺失`}
+							onClick={() => canEdit && setShowImageDialog(true)}>
+							<AppWindow className='h-7 w-7' aria-hidden='true' />
+						</div>
+					)}
 					{canEdit && (
 						<div className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100'>
 							<span className='text-xs text-white'>更换</span>

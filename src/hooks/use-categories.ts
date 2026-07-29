@@ -7,7 +7,7 @@ export type CategoriesConfig = {
 }
 
 const fetcher = async (url: string): Promise<CategoriesConfig> => {
-	const res = await fetch(url, { cache: 'no-store' })
+	const res = await fetch(url)
 	if (!res.ok) {
 		return { categories: [] }
 	}
@@ -33,4 +33,3 @@ export function useCategories() {
 		error
 	}
 }
-
