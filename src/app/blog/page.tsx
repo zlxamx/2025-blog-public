@@ -17,6 +17,7 @@ import JuejinSVG from '@/svgs/juejin.svg'
 import { useAuthStore } from '@/hooks/use-auth'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { readFileAsText } from '@/lib/file-utils'
+import { getDisplayCategories } from '@/lib/blog-categories'
 import { cn } from '@/lib/utils'
 import { saveBlogEdits } from './services/save-blog-edits'
 import { Check } from 'lucide-react'
@@ -67,11 +68,18 @@ export default function BlogPage() {
 				let label: string
 				const date = dayjs(item.date)
 
+				if (displayMode === 'category') {
+					const categories = editMode ? [item.category || '未分类'] : getDisplayCategories(item)
+					for (const category of categories) {
+						if (!acc[category]) {
+							acc[category] = { items: [], label: category }
+						}
+						acc[category].items.push(item)
+					}
+					return acc
+				}
+
 				switch (displayMode) {
-					case 'category':
-						key = item.category || '未分类'
-						label = key
-						break
 					case 'day':
 						key = date.format('YYYY-MM-DD')
 						label = date.format('YYYY年MM月DD日')
@@ -125,7 +133,7 @@ export default function BlogPage() {
 			groupKeys: keys,
 			getGroupLabel: (key: string) => grouped[key]?.label || key
 		}
-	}, [displayItems, displayMode, categoryList])
+	}, [displayItems, displayMode, categoryList, editMode])
 
 	const selectedCount = selectedSlugs.size
 	const buttonText = isAuth ? '保存' : '导入密钥'
