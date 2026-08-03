@@ -58,11 +58,11 @@
 		"enabled": true
 	},
 	"articleCard": {
-		"width": 320,
-		"height": 178,
+		"width": 346,
+		"height": 122,
 		"order": 8,
 		"offsetX": -510,
-		"offsetY": 194,
+		"offsetY": 191,
 		"enabled": true
 	},
 	"writeButtons": {
