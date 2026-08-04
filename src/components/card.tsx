@@ -6,6 +6,10 @@ import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 import { useSize } from '@/hooks/use-size'
 
+/** Entrance spring — keeps the original weighty pop-in without animating layout props */
+const ENTRANCE_TRANSITION = { type: 'spring' as const, stiffness: 260, damping: 22, mass: 1 }
+const HOVER_TRANSITION = { type: 'spring' as const, stiffness: 400, damping: 28 }
+
 interface Props {
 	className?: string
 	order: number
@@ -36,10 +40,12 @@ export default function Card({ children, order, width, height, x, y, className }
 		return (
 			<motion.div
 				className={cn('card squircle', className)}
-				initial={{ opacity: 0, scale: 0.6, left: x, top: y, width, height }}
-				animate={{ opacity: 1, scale: 1, left: x, top: y, width, height }}
-				whileHover={{ scale: 1.05 }}
-				whileTap={{ scale: 0.95 }}>
+				style={{ left: x, top: y, width, height }}
+				initial={{ opacity: 0, scale: 0.6 }}
+				animate={{ opacity: 1, scale: 1 }}
+				transition={ENTRANCE_TRANSITION}
+				whileHover={{ scale: 1.05, transition: HOVER_TRANSITION }}
+				whileTap={{ scale: 0.95, transition: HOVER_TRANSITION }}>
 				{children}
 			</motion.div>
 		)

@@ -12,6 +12,8 @@ export function useBlogCoverHover(editMode: boolean) {
 	const [hoverCoverPreview, setHoverCoverPreview] = useState<BlogCoverPreviewState>(null)
 	const [mousePosition, setMousePosition] = useState<{ x: number; y: number } | null>(null)
 	const coverHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+	// Keep latest pointer without React state until preview is actually shown
+	const latestPointerRef = useRef({ x: 0, y: 0 })
 
 	const clearCoverHoverSchedule = useCallback(() => {
 		if (coverHoverTimerRef.current !== null) {
@@ -23,6 +25,7 @@ export function useBlogCoverHover(editMode: boolean) {
 	const cancelCoverPreview = useCallback(() => {
 		clearCoverHoverSchedule()
 		setHoverCoverPreview(null)
+		setMousePosition(null)
 	}, [clearCoverHoverSchedule])
 
 	useEffect(() => {
@@ -33,24 +36,29 @@ export function useBlogCoverHover(editMode: boolean) {
 		if (editMode) cancelCoverPreview()
 	}, [editMode, cancelCoverPreview])
 
+	// Only subscribe to mousemove while a cover preview is visible
 	useEffect(() => {
+		if (!hoverCoverPreview) return
+
 		let rafId = 0
-		const latest = { x: 0, y: 0 }
 		const flush = () => {
 			rafId = 0
-			setMousePosition({ x: latest.x, y: latest.y })
+			const { x, y } = latestPointerRef.current
+			setMousePosition({ x, y })
 		}
 		const handleMouseMove = (e: MouseEvent) => {
-			latest.x = e.clientX
-			latest.y = e.clientY
+			latestPointerRef.current = { x: e.clientX, y: e.clientY }
 			if (rafId === 0) rafId = requestAnimationFrame(flush)
 		}
+
+		// Seed position immediately so the preview doesn't wait for the next move
+		setMousePosition({ ...latestPointerRef.current })
 		window.addEventListener('mousemove', handleMouseMove, { passive: true })
 		return () => {
 			window.removeEventListener('mousemove', handleMouseMove)
 			if (rafId !== 0) cancelAnimationFrame(rafId)
 		}
-	}, [])
+	}, [hoverCoverPreview])
 
 	const onCoverLinkMouseEnter = useCallback(
 		(cover?: string) => {
@@ -58,11 +66,22 @@ export function useBlogCoverHover(editMode: boolean) {
 			clearCoverHoverSchedule()
 			coverHoverTimerRef.current = setTimeout(() => {
 				coverHoverTimerRef.current = null
+				// Capture pointer at show-time; tracking starts via the effect above
+				setMousePosition({ ...latestPointerRef.current })
 				setHoverCoverPreview({ src: cover })
 			}, COVER_HOVER_DELAY_MS)
 		},
 		[editMode, clearCoverHoverSchedule]
 	)
+
+	// Lightweight global pointer sample so the first preview frame has a real position
+	useEffect(() => {
+		const handlePointer = (e: MouseEvent) => {
+			latestPointerRef.current = { x: e.clientX, y: e.clientY }
+		}
+		window.addEventListener('mousemove', handlePointer, { passive: true })
+		return () => window.removeEventListener('mousemove', handlePointer)
+	}, [])
 
 	return {
 		cancelCoverPreview,

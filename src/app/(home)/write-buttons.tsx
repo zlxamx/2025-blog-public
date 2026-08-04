@@ -33,12 +33,13 @@ export default function WriteButton() {
 
 	return (
 		<HomeDraggableLayer cardKey='writeButtons' x={x} y={y} width={styles.width} height={styles.height}>
-			<motion.div initial={{ left: x, top: y }} animate={{ left: x, top: y }} className='absolute flex items-center gap-4'>
+			<div className='absolute flex items-center gap-4' style={{ left: x, top: y }}>
 				<motion.button
 					onClick={() => router.push('/write')}
 					initial={{ opacity: 0, scale: 0.6 }}
 					animate={{ opacity: 1, scale: 1 }}
-					whileHover={{ scale: 1.05 }}
+					transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 1 }}
+					whileHover={{ scale: 1.05, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
 					whileTap={{ scale: 0.95 }}
 					style={{ boxShadow: 'inset 0 0 12px rgba(255, 255, 255, 0.4)' }}
 					className='brand-btn whitespace-nowrap'>
@@ -59,13 +60,14 @@ export default function WriteButton() {
 				<motion.button
 					initial={{ opacity: 0, scale: 0.6 }}
 					animate={{ opacity: 1, scale: 1 }}
-					whileHover={{ scale: 1.05 }}
+					transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 1 }}
+					whileHover={{ scale: 1.05, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
 					whileTap={{ scale: 0.95 }}
 					onClick={() => setConfigDialogOpen(true)}
 					className='p-2'>
 					<DotsSVG className='h-6 w-6' />
 				</motion.button>
-			</motion.div>
+			</div>
 		</HomeDraggableLayer>
 	)
 }

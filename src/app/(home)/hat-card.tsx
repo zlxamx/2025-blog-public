@@ -32,9 +32,11 @@ export default function HatCard() {
 	return (
 		<HomeDraggableLayer cardKey='hatCard' x={x} y={y} width={styles.width} height={styles.height}>
 			<motion.div
-				initial={{ opacity: 0, scale: 0.6, left: x, top: y, width: styles.width, height: styles.height }}
-				animate={{ opacity: 1, scale: 1, left: x, top: y, width: styles.width, height: styles.height }}
-				whileHover={{ scale: 1.05 }}
+				style={{ left: x, top: y, width: styles.width, height: styles.height }}
+				initial={{ opacity: 0, scale: 0.6 }}
+				animate={{ opacity: 1, scale: 1 }}
+				transition={{ type: 'spring', stiffness: 260, damping: 22, mass: 1 }}
+				whileHover={{ scale: 1.05, transition: { type: 'spring', stiffness: 400, damping: 28 } }}
 				whileTap={{ scale: 0.95 }}
 				onClick={() => setNumber(number + 1)}
 				className='absolute flex h-full w-full items-center justify-center'>

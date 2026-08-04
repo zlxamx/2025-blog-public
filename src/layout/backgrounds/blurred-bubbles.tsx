@@ -116,7 +116,8 @@ export default function BlurredBubblesBackground({
 		allocateGrid()
 
 		// Poisson-ish initial placement to avoid clusters
-		const bubbles: { x: number; y: number; r: number; color: string; vx: number; vy: number; jitter: number; blur: number }[] = []
+		// Softness comes from a single CSS blur on the container (cheaper than per-bubble canvas filters).
+		const bubbles: { x: number; y: number; r: number; color: string; vx: number; vy: number; jitter: number }[] = []
 		const minDist = Math.max(minRadius * 0.2, 80)
 		const maxTries = 5000
 		let tries = 0
@@ -142,8 +143,7 @@ export default function BlurredBubblesBackground({
 					color: colors[bubbles.length % colors.length | 0],
 					vx: rand(-0.2, 0.2),
 					vy: rand(-0.2, 0.2),
-					jitter: rand(0.6, 1.2),
-					blur: rand(200, 400)
+					jitter: rand(0.6, 1.2)
 				})
 			}
 		}
@@ -224,9 +224,10 @@ export default function BlurredBubblesBackground({
 				b.x += b.vx
 				b.y += b.vy
 
-				// Soft wrap horizontally to avoid bunching at edges
-				if (b.x < -b.r - b.blur / 3) b.x = width + b.r + b.blur / 3
-				if (b.x > width + b.r + b.blur / 3) b.x = -b.r - b.blur / 3
+				// Soft wrap horizontally to avoid bunching at edges (pad for CSS blur halo)
+				const pad = 80
+				if (b.x < -b.r - pad) b.x = width + b.r + pad
+				if (b.x > width + b.r + pad) b.x = -b.r - pad
 
 				// Keep a little padding from exact edge vertically
 				b.y = Math.min(Math.max(b.y, bandMin - b.r * 0.25), bandMax + b.r * 0.25)
@@ -236,16 +237,15 @@ export default function BlurredBubblesBackground({
 			}
 		}
 		function draw() {
+			// Solid circles only — blur is applied once via CSS on the wrapper (avoids N× canvas filter cost).
+			ctx.globalAlpha = 0.85
 			for (const b of bubbles) {
-				ctx.save()
-				ctx.filter = `blur(${b.blur}px)`
-				ctx.globalAlpha = 0.8
 				ctx.beginPath()
 				ctx.fillStyle = b.color
 				ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2)
 				ctx.fill()
-				ctx.restore()
 			}
+			ctx.globalAlpha = 1
 		}
 
 		function frame(t: number) {
@@ -313,8 +313,9 @@ export default function BlurredBubblesBackground({
 			animate={{ opacity: 1 }}
 			initial={{ opacity: 0 }}
 			transition={{ duration: 1 }}
-			className='fixed inset-0 z-0 overflow-hidden'
-			style={{ filter: 'blur(50px)' }}>
+			className='pointer-events-none fixed inset-0 z-0 overflow-hidden'
+			// Single GPU blur pass (replaces previous canvas blur 200–400px + CSS blur 50px double cost)
+			style={{ filter: 'blur(64px)' }}>
 			<canvas ref={ref} className='h-full w-full' style={{ display: 'block' }} />
 		</motion.div>
 	)

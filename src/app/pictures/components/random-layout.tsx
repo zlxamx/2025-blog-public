@@ -49,6 +49,9 @@ type UrlItem = {
 	imageIndex: number | 'single'
 }
 
+const ENTRANCE_TRANSITION = { type: 'spring' as const, stiffness: 260, damping: 22, mass: 1 }
+const ZOOM_TRANSITION = { type: 'tween' as const, ease: 'easeOut' as const, duration: 0.35 }
+
 const buildUrlList = (pictures: Picture[]): UrlItem[] => {
 	const result: UrlItem[] = []
 
@@ -119,6 +122,43 @@ const saveOffset = (url: string, offset: { x: number; y: number }) => {
 	}
 }
 
+function calcDisplaySize(originalSize: OriginalSize | null) {
+	if (!originalSize) {
+		return { width: 200, height: 200 }
+	}
+
+	const ratio = originalSize.width / originalSize.height
+	const minRatio = 2 / 3
+	const maxRatio = 3 / 2
+	const clampedRatio = Math.min(Math.max(ratio, minRatio), maxRatio)
+	const baseWidth = 200
+
+	return {
+		width: baseWidth,
+		height: baseWidth / clampedRatio
+	}
+}
+
+function calcZoomedSize(originalSize: OriginalSize | null) {
+	if (!originalSize) {
+		return { width: 200, height: 200 }
+	}
+
+	if (typeof window === 'undefined') {
+		return originalSize
+	}
+
+	const padding = 24
+	const maxWidth = document.documentElement.clientWidth - padding * 2
+	const maxHeight = document.documentElement.clientHeight - padding * 2
+	const scale = Math.min(maxWidth / originalSize.width, maxHeight / originalSize.height, 1)
+
+	return {
+		width: originalSize.width * scale,
+		height: originalSize.height * scale
+	}
+}
+
 const FloatingImage = ({
 	url,
 	index,
@@ -129,81 +169,77 @@ const FloatingImage = ({
 	pictureId,
 	imageIndex,
 	isEditMode,
-	onDeleteSingle,
-	onDeleteGroup
+	onDeleteSingle
 }: FloatingImageProps) => {
-	const { centerX, centerY } = useCenterStore()
-	const { maxSM, init } = useSize()
-	const bodyRef = useRef(document.body)
+	const centerX = useCenterStore(s => s.centerX)
+	const centerY = useCenterStore(s => s.centerY)
+	const maxSM = useSize(s => s.maxSM)
+	const bodyRef = useRef<HTMLElement | null>(typeof document !== 'undefined' ? document.body : null)
 	const mouseDownTimeRef = useRef<number | null>(null)
-	const [zIndex, setZIndex] = useState(index)
+	const [zIndex, setZIndex] = useState(() => 10 + index)
 	const [show, setShow] = useState(false)
+	const [hasEntered, setHasEntered] = useState(false)
 	const [dragOffset, setDragOffset] = useState(() => loadSavedOffset(url))
-
-	useEffect(() => {
-		setTimeout(() => {
-			setShow(true)
-		}, 200 * index)
-	}, [])
-
 	const [originalSize, setOriginalSize] = useState<OriginalSize | null>(null)
-
-	const displaySize = useMemo(() => {
-		if (!originalSize) {
-			return { width: 200, height: 200 }
-		}
-
-		const ratio = originalSize.width / originalSize.height
-		const minRatio = 2 / 3
-		const maxRatio = 3 / 2
-		const clampedRatio = Math.min(Math.max(ratio, minRatio), maxRatio)
-
-		const baseWidth = 200
-
-		return {
-			width: baseWidth,
-			height: baseWidth / clampedRatio
-		}
-	}, [originalSize])
-
-	const zoomedSize = useMemo(() => {
-		if (!originalSize) {
-			return { width: 200, height: 200 }
-		}
-
-		if (typeof window === 'undefined') {
-			return originalSize
-		}
-
-		const padding = 24
-		const maxWidth = document.documentElement.clientWidth - padding * 2
-		const maxHeight = document.documentElement.clientHeight - padding * 2
-
-		const scale = Math.min(maxWidth / originalSize.width, maxHeight / originalSize.height, 1)
-
-		return {
-			width: originalSize.width * scale,
-			height: originalSize.height * scale
-		}
-	}, [originalSize])
-
 	const [isZoomed, setIsZoomed] = useState(false)
 	const dragStartOffsetRef = useRef({ x: 0, y: 0 })
+	const sizeReadyRef = useRef(false)
 
-	if (!position || !show) return null
+	// Prefetch natural size before first paint — avoids 200×200 → real-size thrash mid-animation
+	useEffect(() => {
+		let cancelled = false
+		const img = new window.Image()
+		img.decoding = 'async'
+		img.src = url
+		const commit = () => {
+			if (cancelled || sizeReadyRef.current) return
+			if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+				sizeReadyRef.current = true
+				setOriginalSize({ width: img.naturalWidth, height: img.naturalHeight })
+			}
+		}
+		if (img.complete) commit()
+		else {
+			img.onload = commit
+			img.onerror = () => {
+				if (!cancelled) {
+					sizeReadyRef.current = true
+					setOriginalSize({ width: 200, height: 200 })
+				}
+			}
+		}
+		return () => {
+			cancelled = true
+		}
+	}, [url])
+
+	// Stagger entrance only after dimensions are known
+	useEffect(() => {
+		if (!originalSize) return
+		const timer = window.setTimeout(() => setShow(true), 200 * index)
+		return () => window.clearTimeout(timer)
+	}, [originalSize, index])
+
+	const displaySize = useMemo(() => calcDisplaySize(originalSize), [originalSize])
+	const zoomedSize = useMemo(() => calcZoomedSize(originalSize), [originalSize])
+
+	if (!position || !show || !originalSize) return null
+
+	const restLeft = centerX + position.x
+	const restTop = centerY + position.y
+	const borderWidth = isZoomed ? (maxSM ? 12 : 24) : 8
 
 	return (
 		<>
 			{isZoomed && (
 				<motion.div
-					onClick={() => {
-						setIsZoomed(false)
-					}}
+					onClick={() => setIsZoomed(false)}
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
-					transition={{ duration: 0.3 }}
+					transition={{ duration: 0.25 }}
 					style={{ zIndex: TOP_Z_INDEX }}
-					className='bg-card fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xl'
+					// Solid tint + light blur: much cheaper than backdrop-blur-xl over the whole wall
+					className='fixed inset-0 z-50 flex items-center justify-center bg-black/25 p-4 backdrop-blur-sm'
 				/>
 			)}
 			<motion.div
@@ -244,39 +280,38 @@ const FloatingImage = ({
 					}
 				}}
 				initial={{
+					opacity: 0,
+					scale: 0.6,
+					left: restLeft,
+					top: restTop,
 					width: displaySize.width,
 					height: displaySize.height,
-					borderWidth: 8,
-					zIndex,
-					left: centerX + position.x,
-					top: centerY + position.y,
 					rotate: position.rotation,
-					scale: 0.6,
-					opacity: 0,
 					x: dragOffset.x,
-					y: dragOffset.y
+					y: dragOffset.y,
+					borderWidth: 8
 				}}
 				animate={
 					isZoomed
 						? {
+								opacity: 1,
+								scale: 1,
 								zIndex: TOP_Z_INDEX,
 								left: centerX,
 								top: centerY,
 								rotate: 0,
-								scale: 1,
-								opacity: 1,
 								x: 0,
 								y: 0,
 								width: zoomedSize.width,
 								height: zoomedSize.height,
-								borderWidth: maxSM ? 12 : 24
+								borderWidth
 							}
 						: {
-								zIndex,
-								scale: 1,
 								opacity: 1,
-								left: centerX + position.x,
-								top: centerY + position.y,
+								scale: 1,
+								zIndex,
+								left: restLeft,
+								top: restTop,
 								rotate: position.rotation,
 								x: dragOffset.x,
 								y: dragOffset.y,
@@ -285,19 +320,23 @@ const FloatingImage = ({
 								borderWidth: 8
 							}
 				}
-				transition={{ type: 'tween', ease: 'easeOut' }}
+				// First paint: weighty spring. Later (zoom / drag settle): short tween.
+				transition={hasEntered ? ZOOM_TRANSITION : ENTRANCE_TRANSITION}
+				onAnimationComplete={() => {
+					if (!hasEntered) setHasEntered(true)
+				}}
 				className={cn(
-					'pointer-events-auto absolute origin-center -translate-1/2 cursor-pointer shadow-xl transition-[scale]',
-					!isEditMode && !isZoomed && 'hover:scale-105'
+					'pointer-events-auto absolute origin-center -translate-1/2 cursor-pointer border-solid border-white bg-white shadow-xl',
+					!isEditMode && !isZoomed && 'transition-transform hover:scale-105'
 				)}>
-				<motion.img
+				<img
 					src={url}
-					onLoad={event => {
-						const img = event.currentTarget
-						setOriginalSize({ width: img.naturalWidth, height: img.naturalHeight })
-					}}
+					alt={description || ''}
+					width={displaySize.width}
+					height={displaySize.height}
+					decoding='async'
 					draggable={false}
-					className={cn('h-full w-full object-cover select-none')}
+					className='h-full w-full object-cover select-none'
 				/>
 				{isEditMode && !isZoomed && (
 					<motion.button
@@ -332,7 +371,8 @@ const FloatingImage = ({
 						top: maxSM ? 12 : centerY
 					}}
 					initial={{ opacity: 0, scale: 0.4 }}
-					animate={{ opacity: 1, scale: 1 }}>
+					animate={{ opacity: 1, scale: 1 }}
+					transition={ENTRANCE_TRANSITION}>
 					<div className='text-secondary mb-2 text-xs'>{formatUploadedAt(uploadedAt)}</div>
 					<div className='text-sm'>{description}</div>
 				</motion.div>
@@ -342,27 +382,23 @@ const FloatingImage = ({
 }
 
 // 基于唯一标识生成稳定的位置
-// 使用 ref 存储稳定的位置映射
 const positionCacheRef = new Map<string, PositionedItem>()
 const getStablePosition = (uniqueId: string, width: number, height: number): PositionedItem => {
-	// 如果已有缓存，直接返回
 	if (positionCacheRef.has(uniqueId)) {
 		return positionCacheRef.get(uniqueId)!
 	}
 
-	// 使用 uniqueId 的哈希值来生成稳定的索引
 	let hash = 0
 	for (let i = 0; i < uniqueId.length; i++) {
 		const char = uniqueId.charCodeAt(i)
 		hash = (hash << 5) - hash + char
-		hash = hash & hash // Convert to 32bit integer
+		hash = hash & hash
 	}
 	const stableIndex = Math.abs(hash) % 10000
 
 	const maxRadius = Math.min(width, height) / 2 - 100
 	const goldenAngle = Math.PI * (3 - Math.sqrt(5))
 
-	// 使用稳定索引来计算位置，而不是数组索引
 	const t = (stableIndex % 1000) / 1000
 	const radius = Math.pow(t, 0.8) * maxRadius
 	const angle = stableIndex * goldenAngle
@@ -370,7 +406,6 @@ const getStablePosition = (uniqueId: string, width: number, height: number): Pos
 	const baseX = radius * Math.cos(angle)
 	const baseY = radius * Math.sin(angle)
 
-	// 使用 uniqueId 生成稳定的 jitter，确保每次都是相同的位置
 	const jitterSeed = Math.abs(hash) % 1000
 	const jitterRadius = 12
 	const jitterX = (jitterSeed % (jitterRadius * 2)) - jitterRadius
@@ -390,14 +425,8 @@ const getStablePosition = (uniqueId: string, width: number, height: number): Pos
 
 export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onDeleteGroup }: RandomLayoutProps) => {
 	useCenterInit()
-	const { width, height } = useCenterStore()
-	const [show, setShow] = useState(false)
-
-	useEffect(() => {
-		setTimeout(() => {
-			setShow(true)
-		}, 1000)
-	}, [])
+	const width = useCenterStore(s => s.width)
+	const height = useCenterStore(s => s.height)
 
 	const urls = useMemo(() => buildUrlList(pictures), [pictures])
 
@@ -409,13 +438,14 @@ export const RandomLayout = ({ pictures, isEditMode = false, onDeleteSingle, onD
 		return map
 	}, [pictures])
 
+	// Seed z-index once when the url list length changes (not every render)
+	useEffect(() => {
+		lastZIndex = urls.length + 11
+	}, [urls.length])
+
 	if (!urls.length || !width || !height) {
 		return null
 	}
-
-	if (!show) return null
-
-	lastZIndex = urls.length + 11
 
 	return (
 		<>

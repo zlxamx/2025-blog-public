@@ -1,6 +1,5 @@
 import LikeButton from '@/components/like-button'
 import { ANIMATION_DELAY, CARD_SPACING } from '@/consts'
-import { motion } from 'motion/react'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from './stores/config-store'
 import { HomeDraggableLayer } from './home-draggable-layer'
@@ -23,7 +22,7 @@ export default function LikePosition() {
 
 	return (
 		<HomeDraggableLayer cardKey='likePosition' x={x} y={y} width={styles.width} height={styles.height}>
-			<motion.div className='absolute max-sm:static' initial={{ left: x, top: y }} animate={{ left: x, top: y }}>
+			<div className='absolute max-sm:static' style={{ left: x, top: y }}>
 				{siteContent.enableChristmas && (
 					<>
 						<img
@@ -36,7 +35,7 @@ export default function LikePosition() {
 				)}
 
 				<LikeButton delay={cardStyles.shareCard.order * ANIMATION_DELAY * 1000} />
-			</motion.div>
+			</div>
 		</HomeDraggableLayer>
 	)
 }
