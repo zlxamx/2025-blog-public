@@ -13,13 +13,38 @@ type LikeButtonProps = {
 	delay?: number
 }
 
-const ENDPOINT = 'https://blog-liker.yysuni1001.workers.dev/api/like'
+/** 自建点赞 API 时设置 NEXT_PUBLIC_LIKE_API；未设置则仅本地动效，不请求外部服务 */
+const ENDPOINT = process.env.NEXT_PUBLIC_LIKE_API || ''
 
-export default function LikeButton({ slug = 'yysuni', delay, className }: LikeButtonProps) {
+function localStorageKey(slug: string) {
+	return `luxiblog-like:${slug}`
+}
+
+function readLocalCount(slug: string): number {
+	if (typeof window === 'undefined') return 0
+	try {
+		const raw = window.localStorage.getItem(localStorageKey(slug))
+		const n = raw ? Number(raw) : 0
+		return Number.isFinite(n) && n > 0 ? n : 0
+	} catch {
+		return 0
+	}
+}
+
+function writeLocalCount(slug: string, count: number) {
+	try {
+		window.localStorage.setItem(localStorageKey(slug), String(count))
+	} catch {
+		// ignore quota / private mode
+	}
+}
+
+export default function LikeButton({ slug = 'home', delay, className }: LikeButtonProps) {
 	slug = BLOG_SLUG_KEY + slug
 	const [liked, setLiked] = useState(false)
 	const [show, setShow] = useState(false)
 	const [justLiked, setJustLiked] = useState(false)
+	const [localCount, setLocalCount] = useState<number | null>(null)
 	const [particles, setParticles] = useState<Array<{ id: number; x: number; y: number }>>([])
 
 	useEffect(() => {
@@ -27,6 +52,12 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 			setShow(true)
 		}, delay || 1000)
 	}, [])
+
+	useEffect(() => {
+		if (!ENDPOINT && slug) {
+			setLocalCount(readLocalCount(slug))
+		}
+	}, [slug])
 
 	useEffect(() => {
 		if (justLiked) {
@@ -42,10 +73,14 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 		return typeof data?.count === 'number' ? data.count : null
 	}, [])
 
-	const { data: fetchedCount, mutate } = useSWR(slug ? `${ENDPOINT}?slug=${encodeURIComponent(slug)}` : null, fetcher, {
-		revalidateOnFocus: false,
-		dedupingInterval: 1000 * 10
-	})
+	const { data: fetchedCount, mutate } = useSWR(
+		ENDPOINT && slug ? `${ENDPOINT}?slug=${encodeURIComponent(slug)}` : null,
+		fetcher,
+		{
+			revalidateOnFocus: false,
+			dedupingInterval: 1000 * 10
+		}
+	)
 
 	const handleLike = useCallback(async () => {
 		if (!slug) return
@@ -63,6 +98,16 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 		// Clear particles after animation
 		setTimeout(() => setParticles([]), 1000)
 
+		// No remote API: keep a light local count so the badge still works on this device
+		if (!ENDPOINT) {
+			setLocalCount(prev => {
+				const next = (prev ?? 0) + 1
+				writeLocalCount(slug, next)
+				return next
+			})
+			return
+		}
+
 		try {
 			const url = `${ENDPOINT}?slug=${encodeURIComponent(slug)}`
 			const res = await fetch(url, { method: 'POST' })
@@ -75,7 +120,7 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 		}
 	}, [slug, fetchedCount, mutate])
 
-	const count = typeof fetchedCount === 'number' ? fetchedCount : null
+	const count = ENDPOINT ? (typeof fetchedCount === 'number' ? fetchedCount : null) : localCount
 
 	if (show)
 		return (
@@ -106,7 +151,7 @@ export default function LikeButton({ slug = 'yysuni', delay, className }: LikeBu
 					))}
 				</AnimatePresence>
 
-				{typeof count === 'number' && (
+				{typeof count === 'number' && count > 0 && (
 					<motion.span
 						initial={{ scale: 0.4 }}
 						animate={{ scale: 1 }}
