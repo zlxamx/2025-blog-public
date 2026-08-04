@@ -89,6 +89,14 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
 		@apply bg-white/40! backdrop-blur;
 	}
+
+	@media (max-width: 639px) {
+		html li[data-sonner-toast][data-styled='true'] {
+			backdrop-filter: none !important;
+			-webkit-backdrop-filter: none !important;
+			background: rgba(255, 255, 255, 0.92) !important;
+		}
+	}
 }
 
 @utility card {
@@ -97,6 +105,16 @@
 		0 40px 50px -32px rgba(0, 0, 0, 0.05),
 		inset 0 0 20 rgba(255, 255, 255, 0.25);
 	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+
+	/* Mobile: drop backdrop-filter (very expensive on iOS/Android GPUs).
+	   Use a more opaque fill so cards stay readable without glass blur. */
+	@media (max-width: 639px) {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		background-color: color-mix(in srgb, white 90%, transparent);
+		box-shadow: 0 12px 28px -16px rgba(0, 0, 0, 0.12);
+	}
 
 	&.squircle {
 		@supports (corner-shape: squircle) {

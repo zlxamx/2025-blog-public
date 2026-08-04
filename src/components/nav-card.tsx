@@ -166,11 +166,11 @@ export default function NavCard() {
 												}
 											: { top: hoveredIndex * (itemHeight + 8), left: 0, width: '100%', height: itemHeight }
 									}
-									transition={{
-										type: 'spring',
-										stiffness: 400,
-										damping: 30
-									}}
+									transition={
+										maxSM
+											? { type: 'tween', duration: 0.18, ease: 'easeOut' }
+											: { type: 'spring', stiffness: 400, damping: 30 }
+									}
 									style={{ backgroundImage: 'linear-gradient(to right bottom, var(--color-border) 60%, var(--color-card) 100%)' }}
 								/>
 
