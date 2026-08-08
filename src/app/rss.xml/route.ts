@@ -67,7 +67,7 @@ const serializeItem = (item: BlogIndexItem): string => {
 	const pathHref = getPostHref(item)
 	const link = `${SITE_ORIGIN}${pathHref}`
 	const title = escapeXml(getPostDisplayTitle(item))
-	const description = wrapCdata(item.summary || item.quoteText || '')
+	const description = wrapCdata(item.summary || '')
 	const pubDate = new Date(item.date).toUTCString()
 	const categories = (item.tags || [])
 		.filter(Boolean)

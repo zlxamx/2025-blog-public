@@ -4,7 +4,7 @@ import { prepareBlogsIndex } from '@/lib/blog-index'
 import { getAuthToken } from '@/lib/auth'
 import { GITHUB_CONFIG } from '@/consts'
 import { getFileExt } from '@/lib/utils'
-import { buildIndexItemFromConfig, type StreamConfig } from '@/lib/post-format'
+import { buildIndexItemFromConfig, type NoteConfig } from '@/lib/post-format'
 import { toast } from 'sonner'
 import type { ComposeForm, ComposeImageItem } from '../types'
 import { formatDateTimeLocal } from '../stores/compose-store'
@@ -17,67 +17,10 @@ export type PushPostParams = {
 }
 
 function validateForm(form: ComposeForm) {
-	if (form.format === 'link') {
-		if (!form.url.trim()) throw new Error('链接格式需要填写 URL')
-		if (!form.title.trim()) throw new Error('链接格式需要填写标题')
-		try {
-			// eslint-disable-next-line no-new
-			new URL(form.url.trim())
-		} catch {
-			throw new Error('URL 格式不正确')
-		}
-	}
-	if (form.format === 'quote') {
-		if (!form.quoteText.trim()) throw new Error('摘录格式需要填写引文')
-	}
-	if (form.format === 'note') {
-		if (!form.body.trim() && !form.title.trim()) {
-			throw new Error('短记至少写一点正文或标题')
-		}
-	}
 	if (!form.slug.trim()) throw new Error('需要 slug')
-}
-
-function buildConfig(form: ComposeForm, dateStr: string, imagePaths: string[]): StreamConfig {
-	const summaryBase =
-		form.format === 'quote'
-			? form.quoteText.trim()
-			: form.body.replace(/\s+/g, ' ').trim() || form.title.trim()
-
-	const base: StreamConfig = {
-		format: form.format,
-		title: form.title.trim(),
-		date: dateStr,
-		tags: form.tags,
-		body: form.body,
-		rating: form.rating > 0 ? form.rating : undefined,
-		featured: form.featured,
-		hidden: form.hidden,
-		images: imagePaths,
-		cover: imagePaths[0] || '',
-		summary: summaryBase.slice(0, 160)
+	if (!form.body.trim() && !form.title.trim()) {
+		throw new Error('短记至少写一点正文或标题')
 	}
-
-	if (form.format === 'link') {
-		return {
-			...base,
-			url: form.url.trim(),
-			sourceUrl: form.url.trim(),
-			commentary: form.body
-		}
-	}
-
-	if (form.format === 'quote') {
-		return {
-			...base,
-			quoteText: form.quoteText.trim(),
-			sourceName: form.sourceName.trim() || undefined,
-			sourceUrl: form.sourceUrl.trim() || undefined,
-			commentary: form.body
-		}
-	}
-
-	return base
 }
 
 export async function pushPost(params: PushPostParams): Promise<void> {
@@ -96,7 +39,7 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 
 	const slug = form.slug.trim()
 	const basePath = `public/stream/${slug}`
-	const commitMessage = mode === 'edit' ? `更新动态: ${slug}` : `新增动态: ${slug}`
+	const commitMessage = mode === 'edit' ? `更新短记: ${slug}` : `新增短记: ${slug}`
 	const dateStr = form.date || formatDateTimeLocal()
 
 	const treeItems: TreeItem[] = []
@@ -129,7 +72,19 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 		imagePaths.push(publicPath)
 	}
 
-	const config = buildConfig(form, dateStr, imagePaths)
+	const body = form.body
+	const config: NoteConfig = {
+		format: 'note',
+		title: form.title.trim(),
+		date: dateStr,
+		tags: form.tags,
+		body,
+		featured: form.featured,
+		hidden: form.hidden,
+		images: imagePaths,
+		cover: imagePaths[0] || '',
+		summary: (body.replace(/\s+/g, ' ').trim() || form.title.trim()).slice(0, 160)
+	}
 
 	const configBlob = await createBlob(
 		token,

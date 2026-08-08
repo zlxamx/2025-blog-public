@@ -9,32 +9,21 @@ import { useComposeStore } from './stores/compose-store'
 import { pushPost } from './services/push-post'
 import { useAuthStore } from '@/hooks/use-auth'
 import { readFileAsText } from '@/lib/file-utils'
-import { cn } from '@/lib/utils'
-import EditableStarRating from '@/components/editable-star-rating'
-import type { MicroFormat } from './types'
-
-const FORMATS: { value: MicroFormat; label: string; hint: string }[] = [
-	{ value: 'note', label: '短记', hint: '随手想法、日记、状态' },
-	{ value: 'link', label: '链接', hint: '分享文章 / 工具并点评' },
-	{ value: 'quote', label: '摘录', hint: '书摘、金句、台词' }
-]
 
 function ComposeInner() {
 	const router = useRouter()
 	const searchParams = useSearchParams()
 	const { isAuth, setPrivateKey } = useAuthStore()
-	const { form, images, loading, mode, originalSlug, updateForm, setFormat, setLoading, addFiles, removeImage, loadForEdit, reset } =
-		useComposeStore()
+	const { form, images, loading, mode, originalSlug, updateForm, setLoading, addFiles, removeImage, loadForEdit, reset } = useComposeStore()
 	const keyInputRef = useRef<HTMLInputElement>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
 	useEffect(() => {
 		const slug = searchParams.get('slug')
-		const formatParam = searchParams.get('format') as MicroFormat | null
 		if (slug) {
 			void loadForEdit(slug)
 		} else {
-			reset(formatParam && ['note', 'link', 'quote'].includes(formatParam) ? formatParam : 'note')
+			reset()
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchParams])
@@ -93,80 +82,31 @@ function ComposeInner() {
 				}}
 			/>
 
-			<div className='mx-auto flex w-full max-w-2xl flex-col gap-6 px-6 pt-24 pb-28'>
-				<div className='flex flex-wrap gap-2'>
-					{FORMATS.map(item => (
-						<button
-							key={item.value}
-							type='button'
-							onClick={() => setFormat(item.value)}
-							className={cn(
-								'rounded-full border px-4 py-2 text-sm transition-colors',
-								form.format === item.value ? 'bg-brand border-brand text-white' : 'bg-white/60 text-secondary hover:text-brand'
-							)}>
-							{item.label}
-						</button>
-					))}
+			<div className='mx-auto flex w-full max-w-2xl flex-col gap-4 px-6 pt-24 pb-28'>
+				<div>
+					<h1 className='text-xl font-medium'>写短记</h1>
+					<p className='text-secondary mt-1 text-sm'>标题可选，写完直接发。默认不进 RSS。</p>
 				</div>
-				<p className='text-secondary -mt-3 text-xs'>{FORMATS.find(f => f.value === form.format)?.hint}</p>
 
 				<div className='card space-y-4 p-6'>
-					{form.format === 'link' && (
-						<input
-							type='url'
-							value={form.url}
-							onChange={e => updateForm({ url: e.target.value })}
-							placeholder='https://…（必填）'
-							className='w-full rounded-xl border bg-white/50 px-4 py-3 text-sm focus:outline-none'
-						/>
-					)}
-
-					{form.format === 'quote' && (
-						<textarea
-							value={form.quoteText}
-							onChange={e => updateForm({ quoteText: e.target.value })}
-							placeholder='引文正文（必填）'
-							rows={4}
-							className='w-full resize-none rounded-xl border bg-white/50 px-4 py-3 text-base leading-relaxed focus:outline-none'
-						/>
-					)}
-
 					<input
 						type='text'
 						value={form.title}
 						onChange={e => updateForm({ title: e.target.value })}
-						placeholder={form.format === 'link' ? '标题（必填）' : '标题（可选）'}
+						placeholder='标题（可选）'
 						className='w-full rounded-xl border bg-white/50 px-4 py-3 text-lg font-medium focus:outline-none'
 					/>
-
-					{form.format === 'quote' && (
-						<div className='grid gap-3 sm:grid-cols-2'>
-							<input
-								type='text'
-								value={form.sourceName}
-								onChange={e => updateForm({ sourceName: e.target.value })}
-								placeholder='出处 / 作者（可选）'
-								className='w-full rounded-xl border bg-white/50 px-4 py-2 text-sm focus:outline-none'
-							/>
-							<input
-								type='url'
-								value={form.sourceUrl}
-								onChange={e => updateForm({ sourceUrl: e.target.value })}
-								placeholder='出处链接（可选）'
-								className='w-full rounded-xl border bg-white/50 px-4 py-2 text-sm focus:outline-none'
-							/>
-						</div>
-					)}
 
 					<textarea
 						value={form.body}
 						onChange={e => updateForm({ body: e.target.value })}
-						placeholder={form.format === 'note' ? '写点什么…（支持 Markdown）' : '你的想法 / 点评（可选，支持 Markdown）'}
-						rows={form.format === 'note' ? 10 : 6}
+						placeholder='写点什么…（支持 Markdown）'
+						rows={12}
 						className='w-full resize-y rounded-xl border bg-white/50 px-4 py-3 text-sm leading-relaxed focus:outline-none'
+						autoFocus
 					/>
 
-					<div className='flex flex-wrap items-center gap-4'>
+					<div className='flex flex-wrap items-center gap-3'>
 						<button
 							type='button'
 							onClick={() => fileInputRef.current?.click()}
@@ -174,15 +114,20 @@ function ComposeInner() {
 							<ImagePlus className='h-4 w-4' />
 							添加图片
 						</button>
-						<div className='flex items-center gap-2 text-sm'>
-							<span className='text-secondary'>评分</span>
-							<EditableStarRating stars={form.rating} editable onChange={v => updateForm({ rating: v })} />
-							{form.rating > 0 && (
-								<button type='button' className='text-secondary text-xs underline' onClick={() => updateForm({ rating: 0 })}>
-									清除
-								</button>
-							)}
-						</div>
+						<input
+							type='text'
+							value={tagsText}
+							onChange={e =>
+								updateForm({
+									tags: e.target.value
+										.split(/[,，]/)
+										.map(t => t.trim())
+										.filter(Boolean)
+								})
+							}
+							placeholder='标签，逗号分隔（可选）'
+							className='min-w-[180px] flex-1 rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none'
+						/>
 					</div>
 
 					{images.length > 0 && (
@@ -204,44 +149,33 @@ function ComposeInner() {
 						</div>
 					)}
 
-					<div className='grid gap-3 border-t border-black/5 pt-4 sm:grid-cols-2'>
-						<input
-							type='text'
-							value={tagsText}
-							onChange={e =>
-								updateForm({
-									tags: e.target.value
-										.split(/[,，]/)
-										.map(t => t.trim())
-										.filter(Boolean)
-								})
-							}
-							placeholder='标签，逗号分隔'
-							className='w-full rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none'
-						/>
-						<input
-							type='datetime-local'
-							value={form.date}
-							onChange={e => updateForm({ date: e.target.value })}
-							className='w-full rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none'
-						/>
-						<input
-							type='text'
-							value={form.slug}
-							onChange={e => updateForm({ slug: e.target.value })}
-							disabled={mode === 'edit'}
-							placeholder='slug'
-							className='w-full rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-60'
-						/>
-						<label className='text-secondary flex items-center gap-2 text-sm'>
-							<input type='checkbox' checked={form.featured} onChange={e => updateForm({ featured: e.target.checked })} />
-							标为精选（进入 RSS）
-						</label>
-						<label className='text-secondary flex items-center gap-2 text-sm'>
-							<input type='checkbox' checked={form.hidden} onChange={e => updateForm({ hidden: e.target.checked })} />
-							隐藏（不出现在列表）
-						</label>
-					</div>
+					<details className='text-secondary text-sm'>
+						<summary className='cursor-pointer select-none'>更多选项</summary>
+						<div className='mt-3 grid gap-3 sm:grid-cols-2'>
+							<input
+								type='datetime-local'
+								value={form.date}
+								onChange={e => updateForm({ date: e.target.value })}
+								className='w-full rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none'
+							/>
+							<input
+								type='text'
+								value={form.slug}
+								onChange={e => updateForm({ slug: e.target.value })}
+								disabled={mode === 'edit'}
+								placeholder='slug'
+								className='w-full rounded-xl border bg-white/50 px-3 py-2 text-sm focus:outline-none disabled:opacity-60'
+							/>
+							<label className='flex items-center gap-2'>
+								<input type='checkbox' checked={form.featured} onChange={e => updateForm({ featured: e.target.checked })} />
+								标为精选（进入 RSS）
+							</label>
+							<label className='flex items-center gap-2'>
+								<input type='checkbox' checked={form.hidden} onChange={e => updateForm({ hidden: e.target.checked })} />
+								隐藏（不出现在列表）
+							</label>
+						</div>
+					</details>
 				</div>
 			</div>
 

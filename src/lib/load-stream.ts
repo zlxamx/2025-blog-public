@@ -1,19 +1,19 @@
-import type { StreamConfig } from '@/lib/post-format'
+import type { NoteConfig } from '@/lib/post-format'
 import { normalizeFormat } from '@/lib/post-format'
 
-export type LoadedStreamPost = {
+export type LoadedNote = {
 	slug: string
-	config: StreamConfig
+	config: NoteConfig
 }
 
-const cache = new Map<string, Promise<LoadedStreamPost>>()
+const cache = new Map<string, Promise<LoadedNote>>()
 
-export async function loadStreamPost(slug: string): Promise<LoadedStreamPost> {
+export async function loadStreamPost(slug: string): Promise<LoadedNote> {
 	if (!slug) throw new Error('Slug is required')
 	const cached = cache.get(slug)
 	if (cached) return cached
 
-	const request = fetchStreamPost(slug)
+	const request = fetchNote(slug)
 	cache.set(slug, request)
 	request.catch(() => cache.delete(slug))
 	return request
@@ -24,21 +24,22 @@ export function preloadStreamPost(slug: string) {
 	void loadStreamPost(slug).catch(() => {})
 }
 
-async function fetchStreamPost(slug: string): Promise<LoadedStreamPost> {
+async function fetchNote(slug: string): Promise<LoadedNote> {
 	const res = await fetch(`/stream/${encodeURIComponent(slug)}/config.json`)
-	if (!res.ok) throw new Error('Post not found')
-	const raw = (await res.json()) as StreamConfig
-	const format = normalizeFormat(raw.format)
-	if (format === 'article') throw new Error('Not a stream post')
+	if (!res.ok) throw new Error('短记不存在')
+	const raw = (await res.json()) as NoteConfig
+
+	if (normalizeFormat(raw.format) !== 'note') {
+		throw new Error('不是短记')
+	}
 
 	return {
 		slug,
 		config: {
 			...raw,
-			format,
+			format: 'note',
 			tags: raw.tags || [],
 			body: raw.body || '',
-			commentary: raw.commentary || '',
 			images: raw.images || []
 		}
 	}

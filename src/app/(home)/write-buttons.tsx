@@ -11,9 +11,7 @@ import { HomeDraggableLayer } from './home-draggable-layer'
 
 const MENU = [
 	{ label: '长文', href: '/write', desc: '完整文章 / 周刊' },
-	{ label: '短记', href: '/compose?format=note', desc: '随手想法' },
-	{ label: '链接', href: '/compose?format=link', desc: '分享并点评' },
-	{ label: '摘录', href: '/compose?format=quote', desc: '书摘 / 金句' }
+	{ label: '短记', href: '/compose', desc: '随手想法，不必成章' }
 ]
 
 export default function WriteButton() {
@@ -33,7 +31,6 @@ export default function WriteButton() {
 	}, [styles.order])
 
 	if (maxSM) return null
-
 	if (!show) return null
 
 	const x = styles.offsetX !== null ? center.x + styles.offsetX : center.x + CARD_SPACING + hiCardStyles.width / 2
@@ -60,7 +57,6 @@ export default function WriteButton() {
 								style={{ width: 60, left: -2, top: -4, opacity: 0.95 }}
 							/>
 						)}
-
 						<PenSVG />
 						<span>写点什么</span>
 					</motion.button>

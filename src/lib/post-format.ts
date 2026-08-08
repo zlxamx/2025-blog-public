@@ -1,51 +1,31 @@
 import type { BlogIndexItem, BlogConfig, PostFormat } from '@/app/blog/types'
 
-export const MICRO_FORMATS: PostFormat[] = ['note', 'link', 'quote']
-
 export function normalizeFormat(format?: string | null): PostFormat {
-	if (format === 'note' || format === 'link' || format === 'quote' || format === 'article') {
-		return format
-	}
+	// 历史兼容：曾规划的 link/quote 一律当 note 展示
+	if (format === 'note' || format === 'link' || format === 'quote') return 'note'
 	return 'article'
 }
 
-export function isMicroFormat(format?: string | null): boolean {
-	return MICRO_FORMATS.includes(normalizeFormat(format))
+export function isNoteFormat(format?: string | null): boolean {
+	return normalizeFormat(format) === 'note'
 }
 
-/** RSS / 广播：article 默认 true，微内容默认 false */
+/** RSS：article 默认 true，短记默认 false */
 export function isFeaturedPost(item: Pick<BlogIndexItem, 'format' | 'featured'>): boolean {
 	if (typeof item.featured === 'boolean') return item.featured
 	return normalizeFormat(item.format) === 'article'
 }
 
 export function getPostHref(item: Pick<BlogIndexItem, 'slug' | 'format'>): string {
-	const format = normalizeFormat(item.format)
-	if (format === 'article') return `/blog/${item.slug}`
-	return `/p/${item.slug}`
+	return normalizeFormat(item.format) === 'article' ? `/blog/${item.slug}` : `/p/${item.slug}`
 }
 
 export function getFormatLabel(format?: string | null): string {
-	switch (normalizeFormat(format)) {
-		case 'note':
-			return '短记'
-		case 'link':
-			return '链接'
-		case 'quote':
-			return '摘录'
-		default:
-			return '文章'
-	}
+	return normalizeFormat(format) === 'note' ? '短记' : '文章'
 }
 
-export function getPostDisplayTitle(item: Pick<BlogIndexItem, 'title' | 'slug' | 'format' | 'quoteText' | 'url' | 'summary'>): string {
+export function getPostDisplayTitle(item: Pick<BlogIndexItem, 'title' | 'slug' | 'summary'>): string {
 	if (item.title?.trim()) return item.title.trim()
-	const format = normalizeFormat(item.format)
-	if (format === 'quote' && item.quoteText?.trim()) {
-		const t = item.quoteText.trim()
-		return t.length > 40 ? `${t.slice(0, 40)}…` : t
-	}
-	if (format === 'link' && item.url) return item.url
 	if (item.summary?.trim()) {
 		const t = item.summary.trim()
 		return t.length > 40 ? `${t.slice(0, 40)}…` : t
@@ -62,31 +42,16 @@ export function randomSlug(length = 6): string {
 	return out
 }
 
-export function slugifyTitle(title: string): string {
-	const base = title
-		.trim()
-		.toLowerCase()
-		.replace(/\s+/g, '-')
-		.replace(/[^a-z0-9\u4e00-\u9fff-]/g, '')
-		.replace(/-+/g, '-')
-		.replace(/^-|-$/g, '')
-	return base || randomSlug()
-}
-
-export type StreamConfig = BlogConfig & {
-	format: 'note' | 'link' | 'quote'
+export type NoteConfig = BlogConfig & {
+	format: 'note'
 	body?: string
-	commentary?: string
 	images?: string[]
 }
 
-export function buildIndexItemFromConfig(slug: string, config: BlogConfig | StreamConfig): BlogIndexItem {
+export function buildIndexItemFromConfig(slug: string, config: BlogConfig | NoteConfig): BlogIndexItem {
 	const format = normalizeFormat(config.format)
-	const body = config.body || config.commentary || ''
-	const summary =
-		config.summary ||
-		(format === 'quote' ? config.quoteText?.slice(0, 120) : body.replace(/\s+/g, ' ').trim().slice(0, 120)) ||
-		''
+	const body = config.body || ''
+	const summary = config.summary || body.replace(/\s+/g, ' ').trim().slice(0, 120) || ''
 
 	return {
 		slug,
@@ -99,10 +64,6 @@ export function buildIndexItemFromConfig(slug: string, config: BlogConfig | Stre
 		category: config.category || '',
 		format,
 		featured: typeof config.featured === 'boolean' ? config.featured : format === 'article',
-		url: config.url,
-		quoteText: config.quoteText,
-		sourceName: config.sourceName,
-		sourceUrl: config.sourceUrl,
 		rating: config.rating
 	}
 }

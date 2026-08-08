@@ -43,7 +43,7 @@ const list = [
 	{
 		icon: StreamOutlineSVG,
 		iconActive: StreamFilledSVG,
-		label: '动态',
+		label: '短记',
 		href: '/stream'
 	},
 	{

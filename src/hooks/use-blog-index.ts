@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { useAuthStore } from '@/hooks/use-auth'
 import type { BlogIndexItem, PostFormat } from '@/app/blog/types'
-import { isMicroFormat, normalizeFormat } from '@/lib/post-format'
+import { normalizeFormat } from '@/lib/post-format'
 
 export type { BlogIndexItem } from '@/app/blog/types'
 
@@ -21,7 +21,7 @@ function sortByDateDesc(items: BlogIndexItem[]) {
 	return [...items].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 }
 
-export function useBlogIndex(options?: { formats?: PostFormat[] | 'article' | 'micro' | 'all' }) {
+export function useBlogIndex(options?: { formats?: PostFormat | 'all' }) {
 	const { isAuth } = useAuthStore()
 	const { data, error, isLoading } = useSWR<BlogIndexItem[]>('/blogs/index.json', fetcher, {
 		revalidateOnFocus: false,
@@ -34,13 +34,8 @@ export function useBlogIndex(options?: { formats?: PostFormat[] | 'article' | 'm
 	}
 
 	const formats = options?.formats ?? 'all'
-	if (formats === 'article') {
-		result = result.filter(item => normalizeFormat(item.format) === 'article')
-	} else if (formats === 'micro') {
-		result = result.filter(item => isMicroFormat(item.format))
-	} else if (Array.isArray(formats)) {
-		const set = new Set(formats)
-		result = result.filter(item => set.has(normalizeFormat(item.format)))
+	if (formats === 'article' || formats === 'note') {
+		result = result.filter(item => normalizeFormat(item.format) === formats)
 	}
 
 	return {
@@ -60,10 +55,4 @@ export function useLatestBlog() {
 		loading,
 		error
 	}
-}
-
-export function useLatestMicro() {
-	const { items, loading, error } = useBlogIndex({ formats: 'micro' })
-	const latest = items.length > 0 ? sortByDateDesc(items)[0] : null
-	return { post: latest, loading, error }
 }

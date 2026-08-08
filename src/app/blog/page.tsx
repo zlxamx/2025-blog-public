@@ -28,6 +28,7 @@ type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
 export default function BlogPage() {
 	const { items, loading } = useBlogIndex({ formats: 'article' })
+	// /blog 只列长文；短记在 /stream
 	const { categories: categoriesFromServer } = useCategories()
 	const { isRead } = useReadArticles()
 	const { isAuth, setPrivateKey } = useAuthStore()

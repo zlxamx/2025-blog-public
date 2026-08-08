@@ -3,25 +3,19 @@ import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
 import { loadStreamPost } from '@/lib/load-stream'
 import { randomSlug } from '@/lib/post-format'
-import type { ComposeForm, ComposeImageItem, MicroFormat } from '../types'
+import type { ComposeForm, ComposeImageItem } from '../types'
 
 export const formatDateTimeLocal = (date: Date = new Date()): string => {
 	const pad = (n: number) => String(n).padStart(2, '0')
 	return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
 }
 
-const initialForm = (format: MicroFormat = 'note'): ComposeForm => ({
-	format,
+const initialForm = (): ComposeForm => ({
 	slug: randomSlug(7),
 	title: '',
 	body: '',
-	url: '',
-	quoteText: '',
-	sourceName: '',
-	sourceUrl: '',
 	tags: [],
 	date: formatDateTimeLocal(),
-	rating: 0,
 	featured: false,
 	hidden: false
 })
@@ -33,12 +27,11 @@ type ComposeStore = {
 	images: ComposeImageItem[]
 	loading: boolean
 	updateForm: (updates: Partial<ComposeForm>) => void
-	setFormat: (format: MicroFormat) => void
 	setLoading: (loading: boolean) => void
 	addFiles: (files: FileList | File[]) => Promise<void>
 	removeImage: (id: string) => void
 	loadForEdit: (slug: string) => Promise<void>
-	reset: (format?: MicroFormat) => void
+	reset: () => void
 }
 
 export const useComposeStore = create<ComposeStore>((set, get) => ({
@@ -49,8 +42,6 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 	loading: false,
 
 	updateForm: updates => set(state => ({ form: { ...state.form, ...updates } })),
-
-	setFormat: format => set(state => ({ form: { ...state.form, format } })),
 
 	setLoading: loading => set({ loading }),
 
@@ -65,13 +56,7 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 				.map(it => it.hash as string)
 		)
 
-		const computed = await Promise.all(
-			arr.map(async file => ({
-				file,
-				hash: await hashFileSHA256(file)
-			}))
-		)
-
+		const computed = await Promise.all(arr.map(async file => ({ file, hash: await hashFileSHA256(file) })))
 		const unique = computed.filter(({ hash }) => !existing.has(hash))
 		if (unique.length === 0) {
 			toast.info('图片已存在')
@@ -113,17 +98,11 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 				mode: 'edit',
 				originalSlug: slug,
 				form: {
-					format: cfg.format,
 					slug,
 					title: cfg.title || '',
-					body: cfg.body || cfg.commentary || '',
-					url: cfg.url || '',
-					quoteText: cfg.quoteText || '',
-					sourceName: cfg.sourceName || '',
-					sourceUrl: cfg.sourceUrl || '',
+					body: cfg.body || '',
 					tags: cfg.tags || [],
 					date: cfg.date ? formatDateTimeLocal(new Date(cfg.date)) : formatDateTimeLocal(),
-					rating: cfg.rating || 0,
 					featured: cfg.featured ?? false,
 					hidden: cfg.hidden ?? false
 				},
@@ -138,7 +117,7 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 		}
 	},
 
-	reset: (format = 'note') => {
+	reset: () => {
 		const { images } = get()
 		for (const img of images) {
 			if (img.type === 'file') URL.revokeObjectURL(img.previewUrl)
@@ -146,7 +125,7 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 		set({
 			mode: 'create',
 			originalSlug: null,
-			form: initialForm(format),
+			form: initialForm(),
 			images: [],
 			loading: false
 		})
