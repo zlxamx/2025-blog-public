@@ -17,12 +17,21 @@ import ShareFilledSVG from '@/svgs/share-filled.svg'
 import ShareOutlineSVG from '@/svgs/share-outline.svg'
 import WebsiteFilledSVG from '@/svgs/website-filled.svg'
 import WebsiteOutlineSVG from '@/svgs/website-outline.svg'
+import { Feather } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 import { cn } from '@/lib/utils'
 import { useSize } from '@/hooks/use-size'
 import { useConfigStore } from '@/app/(home)/stores/config-store'
 import { HomeDraggableLayer } from '@/app/(home)/home-draggable-layer'
+import type { SVGProps } from 'react'
+
+function StreamOutlineSVG(props: SVGProps<SVGSVGElement>) {
+	return <Feather strokeWidth={1.75} {...props} />
+}
+function StreamFilledSVG(props: SVGProps<SVGSVGElement>) {
+	return <Feather strokeWidth={2.5} {...props} />
+}
 
 const list = [
 	{
@@ -30,6 +39,12 @@ const list = [
 		iconActive: ScrollFilledSVG,
 		label: '近期文章',
 		href: '/blog'
+	},
+	{
+		icon: StreamOutlineSVG,
+		iconActive: StreamFilledSVG,
+		label: '动态',
+		href: '/stream'
 	},
 	{
 		icon: ProjectsOutlineSVG,
@@ -80,7 +95,7 @@ export default function NavCard() {
 
 	let form = useMemo(() => {
 		if (pathname == '/') return 'full'
-		else if (pathname == '/write') return 'mini'
+		else if (pathname == '/write' || pathname?.startsWith('/compose')) return 'mini'
 		else return 'icons'
 	}, [pathname])
 	if (maxSM) form = 'icons'

@@ -4,6 +4,7 @@ import path from 'node:path'
 import siteContent from '@/config/site-content.json'
 import blogIndex from '@/../public/blogs/index.json'
 import type { BlogIndexItem } from '@/app/blog/types'
+import { getPostDisplayTitle, getPostHref, isFeaturedPost } from '@/lib/post-format'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.xiluluke.com'
 const FEED_PATH = '/rss.xml'
@@ -63,9 +64,10 @@ const buildEnclosure = (cover?: string): string | null => {
 }
 
 const serializeItem = (item: BlogIndexItem): string => {
-	const link = `${SITE_ORIGIN}/blog/${item.slug}`
-	const title = escapeXml(item.title || item.slug)
-	const description = wrapCdata(item.summary || '')
+	const pathHref = getPostHref(item)
+	const link = `${SITE_ORIGIN}${pathHref}`
+	const title = escapeXml(getPostDisplayTitle(item))
+	const description = wrapCdata(item.summary || item.quoteText || '')
 	const pubDate = new Date(item.date).toUTCString()
 	const categories = (item.tags || [])
 		.filter(Boolean)
@@ -93,8 +95,10 @@ export function GET(): Response {
 	const title = siteContent.meta?.title || '2025 Blog'
 	const description = siteContent.meta?.description || 'Latest updates from 2025 Blog'
 
+	// Featured 分离：默认 RSS 只收录精选；旧文章无 featured 字段时 article 视为精选
 	const items = blogs
-		.filter(item => item?.slug)
+		.filter(item => item?.slug && !item.hidden && isFeaturedPost(item))
+		.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 		.map(serializeItem)
 		.join('')
 

@@ -27,7 +27,7 @@ import { CategoryModal } from './components/category-modal'
 type DisplayMode = 'day' | 'week' | 'month' | 'year' | 'category'
 
 export default function BlogPage() {
-	const { items, loading } = useBlogIndex()
+	const { items, loading } = useBlogIndex({ formats: 'article' })
 	const { categories: categoriesFromServer } = useCategories()
 	const { isRead } = useReadArticles()
 	const { isAuth, setPrivateKey } = useAuthStore()

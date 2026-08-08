@@ -127,7 +127,9 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 		summary: form.summary,
 		cover: coverPath,
 		hidden: form.hidden,
-		category: form.category
+		category: form.category,
+		format: 'article' as const,
+		featured: true
 	}
 
 	const configBlob = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, toBase64Utf8(JSON.stringify(config, null, 2)), 'base64')
@@ -151,7 +153,9 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 			summary: form.summary,
 			cover: coverPath,
 			hidden: form.hidden,
-			category: form.category
+			category: form.category,
+			format: 'article',
+			featured: true
 		},
 		GITHUB_CONFIG.BRANCH
 	)
