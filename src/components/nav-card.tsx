@@ -73,6 +73,10 @@ const list = [
 ]
 
 const extraSize = 8
+const ICONS_AVATAR = 40
+const ICONS_ITEM = 28
+const ICONS_GAP = 16
+const ICONS_PAD = 12
 
 export default function NavCard() {
 	const pathname = usePathname()
@@ -100,7 +104,19 @@ export default function NavCard() {
 	}, [pathname])
 	if (maxSM) form = 'icons'
 
-	const itemHeight = form === 'full' ? 52 : 28
+	const itemHeight = form === 'full' ? 52 : ICONS_ITEM
+
+	const size = useMemo(() => {
+		if (form === 'mini') return { width: 72, height: 72 }
+		if (form === 'icons') {
+			// 头像 + n 个图标，按实际数量算宽度，避免 overflow 裁掉头像
+			const n = list.length
+			const width =
+				ICONS_PAD * 2 + ICONS_AVATAR + ICONS_GAP + n * ICONS_ITEM + Math.max(0, n - 1) * ICONS_GAP + 4
+			return { width, height: 64 }
+		}
+		return { width: styles.width, height: styles.height }
+	}, [form, styles])
 
 	let position = useMemo(() => {
 		if (form === 'full') {
@@ -114,12 +130,6 @@ export default function NavCard() {
 			y: 16
 		}
 	}, [form, center, styles, hiCardStyles])
-
-	const size = useMemo(() => {
-		if (form === 'mini') return { width: 64, height: 64 }
-		else if (form === 'icons') return { width: 340, height: 64 }
-		else return { width: styles.width, height: styles.height }
-	}, [form, styles])
 
 	useEffect(() => {
 		if (form === 'icons' && activeIndex !== undefined && hoveredIndex !== activeIndex) {
@@ -145,7 +155,10 @@ export default function NavCard() {
 					height={size.height}
 					x={position.x}
 					y={position.y}
-					className={clsx(form != 'full' && 'overflow-hidden', form === 'mini' && 'p-3', form === 'icons' && 'flex items-center gap-6 p-3')}>
+					className={clsx(
+						form === 'mini' && 'flex items-center justify-center p-3',
+						form === 'icons' && 'flex items-center gap-4 overflow-visible p-3'
+					)}>
 					{form === 'full' && siteContent.enableChristmas && (
 						<>
 							<img
@@ -157,8 +170,21 @@ export default function NavCard() {
 						</>
 					)}
 
-					<Link className='flex items-center gap-3' href='/'>
-						<Image src='/images/avatar.webp' alt='avatar' width={40} height={40} priority style={{ boxShadow: ' 0 12px 20px -5px #E2D9CE' }} className='rounded-full' />
+					{/* 头像固定尺寸 shrink-0，始终可点回首页 */}
+					<Link
+						href='/'
+						title='回到首页'
+						aria-label='回到首页'
+						className={cn('relative z-20 flex shrink-0 items-center gap-3', form === 'mini' && 'justify-center')}>
+						<Image
+							src='/images/avatar.webp'
+							alt='回到首页'
+							width={ICONS_AVATAR}
+							height={ICONS_AVATAR}
+							priority
+							style={{ boxShadow: '0 12px 20px -5px #E2D9CE', width: ICONS_AVATAR, height: ICONS_AVATAR }}
+							className='h-10 w-10 shrink-0 rounded-full object-cover'
+						/>
 						{form === 'full' && <span className='font-averia mt-1 text-2xl leading-none font-medium'>{siteContent.meta.title}</span>}
 					</Link>
 
@@ -166,7 +192,9 @@ export default function NavCard() {
 						<>
 							{form !== 'icons' && <div className='text-secondary mt-6 text-sm uppercase'>General</div>}
 
-							<div className={cn('relative mt-2 space-y-2', form === 'icons' && 'mt-0 flex items-center gap-6 space-y-0')}>
+							<div
+								className={cn('relative mt-2 space-y-2', form === 'icons' && 'mt-0 flex shrink-0 items-center space-y-0')}
+								style={form === 'icons' ? { gap: ICONS_GAP } : undefined}>
 								<motion.div
 									className='absolute max-w-[230px] rounded-full border'
 									layoutId='nav-hover'
@@ -193,11 +221,20 @@ export default function NavCard() {
 									<Link
 										key={item.href}
 										href={item.href}
-										className={cn('text-secondary text-md relative z-10 flex items-center gap-3 rounded-full px-5 py-3', form === 'icons' && 'p-0')}
+										title={item.label}
+										aria-label={item.label}
+										className={cn(
+											'text-secondary text-md relative z-10 flex shrink-0 items-center gap-3 rounded-full px-5 py-3',
+											form === 'icons' && 'p-0'
+										)}
 										onMouseEnter={() => setHoveredIndex(index)}
 										onClick={() => setHoveredIndex(index)}>
-										<div className='flex h-7 w-7 items-center justify-center'>
-											{hoveredIndex == index ? <item.iconActive className='text-brand absolute h-7 w-7' /> : <item.icon className='absolute h-7 w-7' />}
+										<div className='relative flex h-7 w-7 shrink-0 items-center justify-center'>
+											{hoveredIndex == index ? (
+												<item.iconActive className='text-brand absolute h-7 w-7' />
+											) : (
+												<item.icon className='absolute h-7 w-7' />
+											)}
 										</div>
 										{form !== 'icons' && <span className={clsx(index == hoveredIndex && 'text-primary font-medium')}>{item.label}</span>}
 									</Link>
