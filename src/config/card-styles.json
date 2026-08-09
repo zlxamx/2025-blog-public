@@ -53,9 +53,9 @@
 		"width": 200,
 		"height": 180,
 		"order": 7,
-		"offsetX": -134,
-		"offsetY": 229,
-		"enabled": true
+		"offsetX": 425,
+		"offsetY": 239,
+		"enabled": false
 	},
 	"articleCard": {
 		"width": 324,
@@ -66,11 +66,11 @@
 		"enabled": true
 	},
 	"noteCard": {
-		"width": 280,
-		"height": 120,
+		"width": 201,
+		"height": 175,
 		"order": 9,
-		"offsetX": 188,
-		"offsetY": 188,
+		"offsetX": -141,
+		"offsetY": 217,
 		"enabled": true
 	},
 	"writeButtons": {
