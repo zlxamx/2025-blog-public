@@ -66,10 +66,8 @@ export default function NoteCard() {
 							onMouseEnter={() => preloadStreamPost(note.slug)}
 							onClick={() => setActiveSlug(note.slug)}
 							className='flex w-full text-left transition-opacity hover:opacity-80'>
-							{note.cover ? (
+							{note.cover && (
 								<img src={note.cover} alt='' className='mr-3 h-12 w-12 shrink-0 rounded-xl border object-cover' />
-							) : (
-								<div className='text-secondary mr-3 grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/60 text-lg'>✎</div>
 							)}
 							<div className='min-w-0 flex-1'>
 								<h3 className='line-clamp-2 text-sm font-medium'>{getPostDisplayTitle(note)}</h3>
