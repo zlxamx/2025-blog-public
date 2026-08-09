@@ -14,6 +14,7 @@ const CARD_LABELS: Record<string, string> = {
 	socialButtons: '联系',
 	shareCard: '分享',
 	articleCard: '文章',
+	noteCard: '短记',
 	writeButtons: '写作',
 	navCard: '导航',
 	likePosition: '点赞',
