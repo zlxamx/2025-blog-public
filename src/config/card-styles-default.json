@@ -66,8 +66,8 @@
 		"enabled": true
 	},
 	"noteCard": {
-		"width": 248,
-		"height": 292,
+		"width": 280,
+		"height": 120,
 		"order": 9,
 		"offsetX": null,
 		"offsetY": null,
