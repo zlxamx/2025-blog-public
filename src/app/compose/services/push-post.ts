@@ -48,6 +48,10 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 
 	toast.info('正在准备文件...')
 
+	const localImages = images.filter((img): img is Extract<ComposeImageItem, { type: 'file' }> => img.type === 'file')
+	let uploadedCount = 0
+	const totalLocal = localImages.length
+
 	for (const img of images) {
 		if (img.type === 'url') {
 			imagePaths.push(img.url)
@@ -59,6 +63,13 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 		const publicPath = `/stream/${slug}/${filename}`
 
 		if (!uploadedHashes.has(hash)) {
+			uploadedCount += 1
+			const sizeMb = img.file.size / (1024 * 1024)
+			const sizeLabel = sizeMb >= 0.1 ? `${sizeMb.toFixed(1)}MB` : `${Math.max(1, Math.round(img.file.size / 1024))}KB`
+			toast.info(`正在上传图片 ${uploadedCount}/${totalLocal || 1}（${sizeLabel}）...`)
+			if (img.file.size > 5 * 1024 * 1024) {
+				toast.warning(`图片较大（${sizeLabel}），上传可能需要 1–3 分钟，请勿关闭页面`)
+			}
 			const contentBase64 = await fileToBase64NoPrefix(img.file)
 			const blobData = await createBlob(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, contentBase64, 'base64')
 			treeItems.push({

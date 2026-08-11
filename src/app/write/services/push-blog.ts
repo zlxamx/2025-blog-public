@@ -68,9 +68,10 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 	// prepare tree items for all files
 	const treeItems: TreeItem[] = []
 
-	// process all images
+	// process all images（逐张反馈进度，避免长时间停在「正在上传图片」像卡死）
 	if (allLocalImages.length > 0) {
-		toast.info('正在上传图片...')
+		const total = allLocalImages.length
+		let uploadedCount = 0
 		for (const { img, id } of allLocalImages) {
 			const hash = img.hash || (await hashFileSHA256(img.file))
 			const ext = getFileExt(img.file.name)
@@ -78,6 +79,13 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 			const publicPath = `/blogs/${form.slug}/${filename}`
 
 			if (!uploadedHashes.has(hash)) {
+				uploadedCount += 1
+				const sizeMb = img.file.size / (1024 * 1024)
+				const sizeLabel = sizeMb >= 0.1 ? `${sizeMb.toFixed(1)}MB` : `${Math.max(1, Math.round(img.file.size / 1024))}KB`
+				toast.info(`正在上传图片 ${uploadedCount}/${total}（${sizeLabel}）...`)
+				if (img.file.size > 5 * 1024 * 1024) {
+					toast.warning(`图片较大（${sizeLabel}），上传可能需要 1–3 分钟，请勿关闭页面`)
+				}
 				const path = `${basePath}/${filename}`
 				const contentBase64 = await fileToBase64NoPrefix(img.file)
 				// create blob for image

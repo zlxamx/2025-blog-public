@@ -88,7 +88,7 @@ function ComposeInner() {
 					<p className='text-secondary mt-1 text-sm'>标题可选，写完直接发。默认不进 RSS。</p>
 				</div>
 
-				<div className='card space-y-4 p-6'>
+				<div className='card relative space-y-4 p-6'>
 					<input
 						type='text'
 						value={form.title}

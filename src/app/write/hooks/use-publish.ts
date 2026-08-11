@@ -28,9 +28,7 @@ export function usePublish() {
 				mode,
 				originalSlug
 			})
-
-			const successMsg = mode === 'edit' ? '更新成功' : '发布成功'
-			toast.success(successMsg)
+			// pushBlog 内部已 toast.success，这里不再重复
 		} catch (err: any) {
 			console.error(err)
 			toast.error(err?.message || '操作失败')
