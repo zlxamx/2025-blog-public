@@ -4,7 +4,8 @@ import { prepareBlogsIndex } from '@/lib/blog-index'
 import { getAuthToken } from '@/lib/auth'
 import { GITHUB_CONFIG } from '@/consts'
 import { getFileExt } from '@/lib/utils'
-import { buildIndexItemFromConfig, type NoteConfig } from '@/lib/post-format'
+import { invalidateStreamCache } from '@/lib/load-stream'
+import { buildIndexItemFromConfig, summarizeContent, type NoteConfig } from '@/lib/post-format'
 import { toast } from 'sonner'
 import type { ComposeForm, ComposeImageItem } from '../types'
 import { formatDateTimeLocal } from '../stores/compose-store'
@@ -94,7 +95,7 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 		hidden: form.hidden,
 		images: imagePaths,
 		cover: imagePaths[0] || '',
-		summary: (body.replace(/\s+/g, ' ').trim() || form.title.trim()).slice(0, 160)
+		summary: summarizeContent(body) || form.title.trim()
 	}
 
 	const configBlob = await createBlob(
@@ -130,5 +131,6 @@ export async function pushPost(params: PushPostParams): Promise<void> {
 	toast.info('正在更新分支...')
 	await updateRef(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, `heads/${GITHUB_CONFIG.BRANCH}`, commitData.sha)
 
+	invalidateStreamCache(slug)
 	toast.success(mode === 'edit' ? '更新成功！' : '发布成功！')
 }

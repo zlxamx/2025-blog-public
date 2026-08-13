@@ -1,4 +1,4 @@
-import { marked } from 'marked'
+import { Marked } from 'marked'
 import type { Tokens } from 'marked'
 import { appendFootnotes, prepareFootnotes, stripFootnoteReferences } from './footnotes'
 
@@ -64,6 +64,9 @@ export async function renderMarkdown(markdown: string): Promise<MarkdownRenderRe
 	const hasCodeBlock = /^\s*(```|~~~)/m.test(markdown)
 	const hasMath = /(^|[^\\])\${1,2}(?!\s)/m.test(markdown)
 	const [shiki, katex] = await Promise.all([hasCodeBlock ? loadShiki() : null, hasMath ? loadKatex() : null])
+
+	// 每次新建实例，避免 marked.use 把扩展挂到全局单例上越积越多
+	const marked = new Marked()
 
 	// Render HTML with heading ids
 	const renderer = new marked.Renderer()

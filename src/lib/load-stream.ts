@@ -8,6 +8,11 @@ export type LoadedNote = {
 
 const cache = new Map<string, Promise<LoadedNote>>()
 
+export function invalidateStreamCache(slug?: string) {
+	if (slug) cache.delete(slug)
+	else cache.clear()
+}
+
 export async function loadStreamPost(slug: string): Promise<LoadedNote> {
 	if (!slug) throw new Error('Slug is required')
 	const cached = cache.get(slug)

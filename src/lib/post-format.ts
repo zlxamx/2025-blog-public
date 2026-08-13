@@ -33,6 +33,24 @@ export function getPostDisplayTitle(item: Pick<BlogIndexItem, 'title' | 'slug' |
 	return item.slug
 }
 
+/** 从正文/Markdown 抽出一段纯文本摘要 */
+export function summarizeContent(input: string, max = 160): string {
+	if (!input) return ''
+	const text = input
+		.replace(/```[\s\S]*?```/g, ' ')
+		.replace(/~~~[\s\S]*?~~~/g, ' ')
+		.replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/\[\^[^\]]*\]:?/g, ' ')
+		.replace(/^#{1,6}\s+/gm, '')
+		.replace(/^\s*[-*+]\s+/gm, '')
+		.replace(/[*_~`>#]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim()
+	if (!text) return ''
+	return text.length > max ? text.slice(0, max) : text
+}
+
 export function randomSlug(length = 6): string {
 	const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789'
 	let out = ''
@@ -51,7 +69,7 @@ export type NoteConfig = BlogConfig & {
 export function buildIndexItemFromConfig(slug: string, config: BlogConfig | NoteConfig): BlogIndexItem {
 	const format = normalizeFormat(config.format)
 	const body = config.body || ''
-	const summary = config.summary || body.replace(/\s+/g, ' ').trim().slice(0, 120) || ''
+	const summary = config.summary?.trim() || summarizeContent(body) || ''
 
 	return {
 		slug,

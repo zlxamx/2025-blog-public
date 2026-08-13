@@ -3,6 +3,7 @@ import { getAuthToken } from '@/lib/auth'
 import { GITHUB_CONFIG } from '@/consts'
 import { createBlob, createCommit, createTree, getRef, listRepoFilesRecursive, toBase64Utf8, type TreeItem, updateRef } from '@/lib/github-client'
 import { removeBlogsFromIndex } from '@/lib/blog-index'
+import { invalidateBlogCache } from '@/lib/load-blog'
 
 export async function batchDeleteBlogs(slugs: string[]): Promise<void> {
 	const uniqueSlugs = Array.from(new Set(slugs.filter(Boolean)))
@@ -51,6 +52,7 @@ export async function batchDeleteBlogs(slugs: string[]): Promise<void> {
 	toast.info('正在更新分支...')
 	await updateRef(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, `heads/${GITHUB_CONFIG.BRANCH}`, commitData.sha)
 
+	for (const slug of uniqueSlugs) invalidateBlogCache(slug)
 	toast.success('删除成功！请等待页面部署后刷新')
 }
 

@@ -1,13 +1,16 @@
 'use client'
 
 import { motion } from 'motion/react'
-import { useRef } from 'react'
-import { useMarkdownRender } from '@/hooks/use-markdown-render'
+import { useMemo, useRef } from 'react'
+import { htmlToReactContent, useMarkdownRender } from '@/hooks/use-markdown-render'
 import { BlogSidebar } from '@/components/blog-sidebar'
 import { useFootnoteRail } from '@/components/footnote-rail'
+import type { TocItem } from '@/lib/markdown-renderer'
 
 type BlogPreviewProps = {
-	markdown: string
+	markdown?: string
+	html?: string
+	toc?: TocItem[]
 	title: string
 	tags: string[]
 	date: string
@@ -15,8 +18,11 @@ type BlogPreviewProps = {
 	slug?: string
 }
 
-export function BlogPreview({ markdown, title, tags, date, cover, slug }: BlogPreviewProps) {
-	const { content, toc, loading } = useMarkdownRender(markdown)
+export function BlogPreview({ markdown = '', html, toc: providedToc, title, tags, date, cover, slug }: BlogPreviewProps) {
+	const rendered = useMarkdownRender(html ? null : markdown)
+	const content = useMemo(() => (html ? htmlToReactContent(html) : rendered.content), [html, rendered.content])
+	const toc = html ? providedToc || [] : rendered.toc
+	const loading = html ? false : rendered.loading
 	const proseRef = useRef<HTMLDivElement>(null)
 	useFootnoteRail(proseRef, !loading)
 

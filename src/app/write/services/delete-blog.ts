@@ -3,6 +3,7 @@ import { getAuthToken } from '@/lib/auth'
 import { GITHUB_CONFIG } from '@/consts'
 import { createBlob, createCommit, createTree, getRef, listRepoFilesRecursive, toBase64Utf8, TreeItem, updateRef } from '@/lib/github-client'
 import { removeBlogFromIndex } from '@/lib/blog-index'
+import { invalidateBlogCache } from '@/lib/load-blog'
 
 export async function deleteBlog(slug: string): Promise<void> {
 	if (!slug) throw new Error('需要 slug')
@@ -45,5 +46,6 @@ export async function deleteBlog(slug: string): Promise<void> {
 	toast.info('正在更新分支...')
 	await updateRef(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, `heads/${GITHUB_CONFIG.BRANCH}`, commitData.sha)
 
+	invalidateBlogCache(slug)
 	toast.success('删除成功！请等待页面部署后刷新')
 }

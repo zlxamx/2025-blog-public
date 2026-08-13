@@ -1,12 +1,14 @@
 import { MetadataRoute } from 'next'
 import blogIndex from '@/../public/blogs/index.json'
 import type { BlogIndexItem } from '@/app/blog/types'
+import { parsePostDate } from '@/lib/post-date'
 import { getPostHref, normalizeFormat } from '@/lib/post-format'
+import { getSiteOrigin } from '@/lib/site-url'
 
 export const dynamic = 'force-static'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-	const baseUrl = process.env.SITE_URL ? process.env.SITE_URL : process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
+	const baseUrl = getSiteOrigin()
 
 	console.log(`[Sitemap] Generating for: ${baseUrl}`)
 
@@ -16,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 		.filter(post => post?.slug && !post.hidden)
 		.map(post => ({
 			url: `${baseUrl}${getPostHref(post)}`,
-			lastModified: post.date ? new Date(post.date) : new Date(),
+			lastModified: post.date ? parsePostDate(post.date) : new Date(),
 			changeFrequency: 'weekly' as const,
 			priority: normalizeFormat(post.format) === 'article' ? 0.8 : 0.6
 		}))

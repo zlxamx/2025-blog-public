@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
 	reactCompiler: true,
 	pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
 	typescript: {
-		ignoreBuildErrors: true
+		ignoreBuildErrors: false
 	},
 	experimental: {
 		scrollRestoration: false

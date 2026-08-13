@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
-import { loadBlog } from '@/lib/load-blog'
+import { invalidateBlogCache, loadBlog } from '@/lib/load-blog'
 import type { PublishForm, ImageItem } from '../types'
 
 export const formatDateTimeLocal = (date: Date = new Date()): string => {
@@ -158,6 +158,7 @@ export const useWriteStore = create<WriteStore>((set, get) => ({
 	loadBlogForEdit: async (slug: string) => {
 		try {
 			set({ loading: true })
+			invalidateBlogCache(slug)
 			const blog = await loadBlog(slug)
 
 			// Parse images from markdown

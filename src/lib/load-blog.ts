@@ -11,6 +11,11 @@ export type LoadedBlog = {
 
 const blogRequestCache = new Map<string, Promise<LoadedBlog>>()
 
+export function invalidateBlogCache(slug?: string) {
+	if (slug) blogRequestCache.delete(slug)
+	else blogRequestCache.clear()
+}
+
 /**
  * Load blog data from public/blogs/{slug}
  * Used by both view page and edit page

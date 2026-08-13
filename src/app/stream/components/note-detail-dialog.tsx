@@ -154,7 +154,7 @@ export function NoteDetailDialog({ slug, onClose }: NoteDetailDialogProps) {
 										{title}
 									</h2>
 									{bodyMd && (
-										<div className='prose-blog mt-5 max-h-[min(40vh,360px)] overflow-y-auto text-[15px] leading-7 text-[#2c4040]/'>
+										<div className='prose-blog mt-5 max-h-[min(40vh,360px)] overflow-y-auto text-[15px] leading-7 text-[#2c4040]/80'>
 											{mdLoading ? <p className='text-secondary text-sm'>渲染中…</p> : content}
 										</div>
 									)}

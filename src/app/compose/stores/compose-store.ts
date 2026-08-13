@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { toast } from 'sonner'
 import { hashFileSHA256 } from '@/lib/file-utils'
-import { loadStreamPost } from '@/lib/load-stream'
+import { invalidateStreamCache, loadStreamPost } from '@/lib/load-stream'
 import { randomSlug } from '@/lib/post-format'
 import type { ComposeForm, ComposeImageItem } from '../types'
 
@@ -86,6 +86,7 @@ export const useComposeStore = create<ComposeStore>((set, get) => ({
 	loadForEdit: async slug => {
 		try {
 			set({ loading: true })
+			invalidateStreamCache(slug)
 			const post = await loadStreamPost(slug)
 			const cfg = post.config
 			const images: ComposeImageItem[] = (cfg.images || []).map(url => ({

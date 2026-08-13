@@ -1,6 +1,8 @@
 import clsx, { ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
+export { getFileExt } from './file-ext'
+
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
@@ -19,16 +21,6 @@ export function thousandsSeparator(n: string | number | any, sign: string = ',')
 
 		return n.replace(reg, `$&${sign}`)
 	} else return 0
-}
-
-export function getFileExt(filename: string): string {
-	const lower = filename.toLowerCase()
-	if (lower.endsWith('.jpg')) return '.jpg'
-	if (lower.endsWith('.jpeg')) return '.jpeg'
-	if (lower.endsWith('.webp')) return '.webp'
-	if (lower.endsWith('.png')) return '.png'
-	if (lower.endsWith('.svg')) return '.svg'
-	return '.png'
 }
 
 export function rand(a: number, b: number) {

@@ -6,6 +6,8 @@ import { GITHUB_CONFIG } from '@/consts'
 import type { ImageItem } from '../types'
 import { getFileExt } from '@/lib/utils'
 import { toast } from 'sonner'
+import { invalidateBlogCache } from '@/lib/load-blog'
+import { summarizeContent } from '@/lib/post-format'
 import { formatDateTimeLocal } from '../stores/write-store'
 
 export type PushBlogParams = {
@@ -128,11 +130,12 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 
 	// create blob for config.json
 	const dateStr = form.date || formatDateTimeLocal()
+	const summary = form.summary?.trim() || summarizeContent(mdToUpload)
 	const config = {
 		title: form.title,
 		tags: form.tags,
 		date: dateStr,
-		summary: form.summary,
+		summary,
 		cover: coverPath,
 		hidden: form.hidden,
 		category: form.category,
@@ -158,7 +161,7 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 			title: form.title,
 			tags: form.tags,
 			date: dateStr,
-			summary: form.summary,
+			summary,
 			cover: coverPath,
 			hidden: form.hidden,
 			category: form.category,
@@ -187,5 +190,6 @@ export async function pushBlog(params: PushBlogParams): Promise<void> {
 	toast.info('正在更新分支...')
 	await updateRef(token, GITHUB_CONFIG.OWNER, GITHUB_CONFIG.REPO, `heads/${GITHUB_CONFIG.BRANCH}`, commitData.sha)
 
+	invalidateBlogCache(form.slug)
 	toast.success('发布成功！')
 }
